@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# FastAPI / Uvicorn
+uv.lock
+
+# Environment files
+.env
+*.env
+
+# Logs
+*.log
+*.pid
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.seed
+*.bak
+
+# Node / React frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.cache/
+frontend/dist/
+
+# Coverage / test
+.coverage
+htmlcov/
+pytest_cache/
+
+# Reports / temporary
+*.odt~
+*.odp~
+*.pdf~
+*.tmp
