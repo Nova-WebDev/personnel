@@ -17,7 +17,7 @@ class AuthRepository(IAuthRepository):
 
         return AuthUserEntity(
             phone_number=user.phone,
-            public_id=user.public_id,
+            public_id=str(user.public_id),
             role=user.role,
             is_blocked=user.is_blocked,
         )

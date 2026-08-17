@@ -1,6 +1,7 @@
 import base64
 import json
 import time
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
@@ -10,8 +11,8 @@ class TokenValidationError(Exception):
 
 
 class TokenValidator:
-    def __init__(self, public_key_path: str = "app/key/public_key.pem"):
-        self.public_key = self._load_public_key(public_key_path)
+    def __init__(self, public_key_path: str):
+        self._public_key = self._load_public_key(public_key_path)
 
     @staticmethod
     def _load_public_key(path: str) -> Ed25519PublicKey:
@@ -33,7 +34,7 @@ class TokenValidator:
         signature = self._b64decode(signature_b64)
 
         try:
-            self.public_key.verify(signature, unsigned)
+            self._public_key.verify(signature, unsigned)
         except Exception:
             raise TokenValidationError("Invalid signature")
 
@@ -45,3 +46,6 @@ class TokenValidator:
             raise TokenValidationError("Token expired")
 
         return payload
+
+
+token_validator = TokenValidator(public_key_path="app/key/public_key.pem")
