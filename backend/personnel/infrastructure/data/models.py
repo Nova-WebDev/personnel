@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, Boolean, DateTime, Enum as SAEnum, Index, func
+from sqlalchemy import ForeignKey, String, Boolean, DateTime, Enum as SAEnum, Index, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,10 +20,13 @@ class Branch(Base):
 
 class Unit(Base):
     __tablename__ = "units"
+    __table_args__ = (
+        UniqueConstraint("name", "branch_id", name="uq_unit_name_branch_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
-    branch_id: Mapped[int] = mapped_column(ForeignKey("branches.id"), index=True)
+    branch_id: Mapped[int] = mapped_column(ForeignKey("branches.id", ondelete="CASCADE"), index=True)
 
     branch: Mapped["Branch"] = relationship(back_populates="units")
 
@@ -54,10 +57,10 @@ class Personnel(Base):
         SAEnum(PersonnelPosition),
         nullable=True,
     )
-    branch_id: Mapped[int] = mapped_column(ForeignKey("branches.id"), index=True)
-    unit_id: Mapped[int | None] = mapped_column(ForeignKey("units.id"), nullable=True, index=True)
+    branch_id: Mapped[int | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"), nullable=True, index=True)
+    unit_id: Mapped[int | None] = mapped_column(ForeignKey("units.id", ondelete="SET NULL"), nullable=True, index=True)
     is_blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    branch: Mapped["Branch"] = relationship()
+    branch: Mapped["Branch | None"] = relationship()
     unit: Mapped["Unit | None"] = relationship()

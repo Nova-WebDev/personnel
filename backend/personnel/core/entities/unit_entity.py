@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class BranchEntity:
+class UnitEntity:
     id: int
     name: str
+    branch_id: int
