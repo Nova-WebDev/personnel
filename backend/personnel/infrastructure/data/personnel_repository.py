@@ -1,18 +1,26 @@
+import uuid
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from personnel.core.interfaces.personnel_repository import IPersonnelRepository
 from personnel.core.entities.branch_entity import BranchEntity
 from personnel.core.entities.unit_entity import UnitEntity
+from personnel.core.entities.branch_with_units_entity import BranchWithUnitsEntity
+from personnel.core.entities.personnel_entity import PersonnelEntity
+from personnel.core.entities.position import PersonnelPosition
 from personnel.core.errors.personnel_errors import (
     BranchAlreadyExistsError,
     BranchNotFoundError,
     UnitAlreadyExistsError,
     UnitNotFoundError,
+    PersonnelIdAlreadyExistsError,
+    PersonnelNotFoundError,
 )
-from personnel.infrastructure.data.models import Branch, Unit
+
+from personnel.infrastructure.data.models import Branch, Unit, Personnel
 
 
 class PersonnelRepository(IPersonnelRepository):
@@ -107,4 +115,121 @@ class PersonnelRepository(IPersonnelRepository):
             raise UnitNotFoundError()
 
         await self.session.delete(unit)
+        await self.session.flush()
+
+    async def get_all_branches_with_units(self) -> list[BranchWithUnitsEntity]:
+        stmt = select(Branch).options(selectinload(Branch.units))
+        result = await self.session.execute(stmt)
+        branches = result.scalars().all()
+
+        return [
+            BranchWithUnitsEntity(
+                id=branch.id,
+                name=branch.name,
+                units=[
+                    UnitEntity(id=unit.id, name=unit.name, branch_id=unit.branch_id)
+                    for unit in branch.units
+                ],
+            )
+            for branch in branches
+        ]
+
+    async def create_personnel(
+            self,
+            personnel_id: str,
+            first_name: str,
+            last_name: str,
+            branch_id: int,
+            unit_id: int | None,
+            photo_path: str | None,
+            position: PersonnelPosition | None,
+    ) -> PersonnelEntity:
+        personnel = Personnel(
+            personnel_id=personnel_id,
+            first_name=first_name,
+            last_name=last_name,
+            branch_id=branch_id,
+            unit_id=unit_id,
+            photo_path=photo_path,
+            position=position,
+        )
+        self.session.add(personnel)
+
+        try:
+            await self.session.flush()
+        except IntegrityError as e:
+            error_message = str(e.orig) if e.orig else ""
+            if "personnel_id" in error_message:
+                raise PersonnelIdAlreadyExistsError()
+            if "unit_id" in error_message:
+                raise UnitNotFoundError()
+            raise BranchNotFoundError()
+
+        return PersonnelEntity(
+            uuid=personnel.uuid,
+            personnel_id=personnel_id,
+            first_name=first_name,
+            last_name=last_name,
+            branch_id=branch_id,
+            unit_id=unit_id,
+            photo_path=photo_path,
+            position=position,
+            is_blocked=False,
+        )
+
+    async def update_personnel(
+            self,
+            personnel_uuid: uuid.UUID,
+            personnel_id: str,
+            first_name: str,
+            last_name: str,
+            branch_id: int,
+            unit_id: int | None,
+            position: PersonnelPosition | None,
+    ) -> PersonnelEntity:
+        stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
+        result = await self.session.execute(stmt)
+        personnel = result.scalar_one_or_none()
+
+        if personnel is None:
+            raise PersonnelNotFoundError()
+
+        personnel.personnel_id = personnel_id
+        personnel.first_name = first_name
+        personnel.last_name = last_name
+        personnel.branch_id = branch_id
+        personnel.unit_id = unit_id
+        personnel.position = position
+
+        try:
+            await self.session.flush()
+        except IntegrityError as e:
+            error_message = str(e.orig) if e.orig else ""
+            if "personnel_id" in error_message:
+                raise PersonnelIdAlreadyExistsError()
+            if "unit_id" in error_message:
+                raise UnitNotFoundError()
+            raise BranchNotFoundError()
+
+        return PersonnelEntity(
+            uuid=personnel_uuid,
+            personnel_id=personnel_id,
+            first_name=first_name,
+            last_name=last_name,
+            branch_id=branch_id,
+            unit_id=unit_id,
+            photo_path=personnel.photo_path,
+            position=position,
+            is_blocked=personnel.is_blocked,
+        )
+
+    async def set_personnel_block_status(self, personnel_uuid: uuid.UUID, is_blocked: bool) -> None:
+        stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
+        result = await self.session.execute(stmt)
+        personnel = result.scalar_one_or_none()
+
+        if personnel is None:
+            raise PersonnelNotFoundError()
+
+        personnel.is_blocked = is_blocked
         await self.session.flush()

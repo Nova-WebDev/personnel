@@ -24,3 +24,15 @@ class UnitNotFoundError(DomainError):
 
     def __init__(self, message: str = "Unit not found"):
         super().__init__(message)
+
+class PersonnelIdAlreadyExistsError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "Personnel with this personnel_id already exists"):
+        super().__init__(message)
+
+class PersonnelNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Personnel not found"):
+        super().__init__(message)
