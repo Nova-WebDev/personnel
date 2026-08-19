@@ -52,6 +52,11 @@ services:
     environment:
       DATABASE_URL: "postgresql+asyncpg://admin:admin123@postgres:5432/personnel"
       REDIS_URL: "redis://redis:6379/0"
+      SMS_API_KEY: "57616e313261555a53386e2f5745335a52703043424f6650364649597754314e325766724757574a6d77493d"
+      SMS_TEMPLATE: "login"
+      STORAGE_PATH: "/app/media"
+      FRONTEND_DOMAIN: "http://localhost"
+      PERSONNEL_API_KEY: "649050f5d9f6b53e6f10c4ae2516e55f010c7dc878dc4ede4dd7b687d40393a0"
     restart: unless-stopped
     volumes:
       - personnel_media:/app/media

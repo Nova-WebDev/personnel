@@ -6,6 +6,8 @@ from personnel.core.entities.unit_entity import UnitEntity
 from personnel.core.entities.branch_with_units_entity import BranchWithUnitsEntity
 from personnel.core.entities.personnel_entity import PersonnelEntity
 from personnel.core.entities.position import PersonnelPosition
+from personnel.core.entities.personnel_order_by import PersonnelOrderBy
+from personnel.core.entities.personnel_detail_entity import PersonnelDetailEntity
 
 class IPersonnelRepository(ABC):
     @abstractmethod
@@ -59,9 +61,37 @@ class IPersonnelRepository(ABC):
             branch_id: int,
             unit_id: int | None,
             position: PersonnelPosition | None,
+            photo_path: str | None,
     ) -> PersonnelEntity:
         pass
 
     @abstractmethod
     async def set_personnel_block_status(self, personnel_uuid: uuid.UUID, is_blocked: bool) -> None:
+        pass
+
+    @abstractmethod
+    async def count_personnel(self, search: str | None) -> int:
+        pass
+
+    @abstractmethod
+    async def get_personnel_paginated(
+            self,
+            offset: int,
+            limit: int,
+            search: str | None,
+            order_by: PersonnelOrderBy,
+            descending: bool,
+    ) -> list[PersonnelEntity]:
+        pass
+
+    @abstractmethod
+    async def update_photo_path(self, personnel_uuid: uuid.UUID, photo_path: str) -> None:
+        pass
+
+    @abstractmethod
+    async def get_by_uuid(self, personnel_uuid: uuid.UUID) -> PersonnelEntity | None:
+        pass
+
+    @abstractmethod
+    async def get_personnel_detail(self, personnel_uuid: uuid.UUID) -> PersonnelDetailEntity | None:
         pass

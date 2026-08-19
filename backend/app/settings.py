@@ -10,7 +10,8 @@ class Settings(BaseSettings):
 
     storage_path: str
 
-    cron_api_key: str
+    frontend_domain: str
+    personnel_api_key: str
 
     class Config:
         env_file = "../.env"

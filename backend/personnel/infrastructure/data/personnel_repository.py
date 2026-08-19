@@ -1,16 +1,20 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from personnel.core.interfaces.personnel_repository import IPersonnelRepository
+
 from personnel.core.entities.branch_entity import BranchEntity
 from personnel.core.entities.unit_entity import UnitEntity
 from personnel.core.entities.branch_with_units_entity import BranchWithUnitsEntity
 from personnel.core.entities.personnel_entity import PersonnelEntity
 from personnel.core.entities.position import PersonnelPosition
+from personnel.core.entities.personnel_order_by import PersonnelOrderBy
+from personnel.core.entities.personnel_detail_entity import PersonnelDetailEntity
+
 from personnel.core.errors.personnel_errors import (
     BranchAlreadyExistsError,
     BranchNotFoundError,
@@ -186,6 +190,7 @@ class PersonnelRepository(IPersonnelRepository):
             branch_id: int,
             unit_id: int | None,
             position: PersonnelPosition | None,
+            photo_path: str | None,
     ) -> PersonnelEntity:
         stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
         result = await self.session.execute(stmt)
@@ -200,6 +205,7 @@ class PersonnelRepository(IPersonnelRepository):
         personnel.branch_id = branch_id
         personnel.unit_id = unit_id
         personnel.position = position
+        personnel.photo_path = photo_path
 
         try:
             await self.session.flush()
@@ -211,6 +217,8 @@ class PersonnelRepository(IPersonnelRepository):
                 raise UnitNotFoundError()
             raise BranchNotFoundError()
 
+        is_blocked_result: bool = personnel.is_blocked
+
         return PersonnelEntity(
             uuid=personnel_uuid,
             personnel_id=personnel_id,
@@ -218,10 +226,12 @@ class PersonnelRepository(IPersonnelRepository):
             last_name=last_name,
             branch_id=branch_id,
             unit_id=unit_id,
-            photo_path=personnel.photo_path,
+            photo_path=photo_path,
             position=position,
-            is_blocked=personnel.is_blocked,
+            is_blocked=is_blocked_result,
         )
+
+
 
     async def set_personnel_block_status(self, personnel_uuid: uuid.UUID, is_blocked: bool) -> None:
         stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
@@ -233,3 +243,121 @@ class PersonnelRepository(IPersonnelRepository):
 
         personnel.is_blocked = is_blocked
         await self.session.flush()
+
+    async def count_personnel(self, search: str | None) -> int:
+        stmt = select(func.count()).select_from(Personnel)
+
+        if search:
+            pattern = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    Personnel.first_name.ilike(pattern),
+                    Personnel.last_name.ilike(pattern),
+                )
+            )
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def get_personnel_paginated(
+            self,
+            offset: int,
+            limit: int,
+            search: str | None,
+            order_by: PersonnelOrderBy,
+            descending: bool,
+    ) -> list[PersonnelEntity]:
+        stmt = select(Personnel)
+
+        if search:
+            pattern = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    Personnel.first_name.ilike(pattern),
+                    Personnel.last_name.ilike(pattern),
+                )
+            )
+
+        order_column = getattr(Personnel, order_by.value)
+        stmt = stmt.order_by(order_column.desc() if descending else order_column.asc())
+        stmt = stmt.offset(offset).limit(limit)
+
+        result = await self.session.execute(stmt)
+        rows = result.scalars().all()
+
+        return [
+            PersonnelEntity(
+                uuid=row.uuid,
+                personnel_id=row.personnel_id,
+                first_name=row.first_name,
+                last_name=row.last_name,
+                branch_id=row.branch_id,
+                unit_id=row.unit_id,
+                photo_path=row.photo_path,
+                position=row.position,
+                is_blocked=row.is_blocked,
+            )
+            for row in rows
+        ]
+
+    async def update_photo_path(self, personnel_uuid: uuid.UUID, photo_path: str) -> None:
+        stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
+        result = await self.session.execute(stmt)
+        personnel = result.scalar_one_or_none()
+
+        if personnel is None:
+            raise PersonnelNotFoundError()
+
+        personnel.photo_path = photo_path
+        await self.session.flush()
+
+    async def get_by_uuid(self, personnel_uuid: uuid.UUID) -> PersonnelEntity | None:
+        stmt = select(Personnel).where(Personnel.uuid == personnel_uuid)
+        result = await self.session.execute(stmt)
+        personnel = result.scalar_one_or_none()
+
+        if personnel is None:
+            return None
+
+        return PersonnelEntity(
+            uuid=personnel.uuid,
+            personnel_id=personnel.personnel_id,
+            first_name=personnel.first_name,
+            last_name=personnel.last_name,
+            branch_id=personnel.branch_id,
+            unit_id=personnel.unit_id,
+            photo_path=personnel.photo_path,
+            position=personnel.position,
+            is_blocked=personnel.is_blocked,
+        )
+
+    async def get_personnel_detail(self, personnel_uuid: uuid.UUID) -> PersonnelDetailEntity | None:
+        stmt = (
+            select(
+                Personnel,
+                Branch.name.label("branch_name"),
+                Unit.name.label("unit_name"),
+            )
+            .outerjoin(Branch, Personnel.branch_id == Branch.id)
+            .outerjoin(Unit, Personnel.unit_id == Unit.id)
+            .where(Personnel.uuid == personnel_uuid)
+        )
+        result = await self.session.execute(stmt)
+        row = result.first()
+
+        if row is None:
+            return None
+
+        personnel, branch_name, unit_name = row
+
+        return PersonnelDetailEntity(
+            uuid=personnel.uuid,
+            personnel_id=personnel.personnel_id,
+            first_name=personnel.first_name,
+            last_name=personnel.last_name,
+            photo_path=personnel.photo_path,
+            position=personnel.position,
+            is_blocked=personnel.is_blocked,
+            branch_name=branch_name,
+            unit_name=unit_name,
+        )

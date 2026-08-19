@@ -1,7 +1,13 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form, UploadFile, File, Response
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from personnel.core.entities.position import PersonnelPosition
+
+from personnel.infrastructure.security.rate_limit_dependency import rate_limit
+from personnel.infrastructure.security.api_key_dependency import verify_api_key
 
 from schemas.personnel.create_branch_request import CreateBranchRequest
 from schemas.personnel.branch_response import BranchResponse
@@ -11,10 +17,11 @@ from schemas.personnel.update_branch_request import UpdateBranchRequest
 from schemas.personnel.update_unit_name_request import UpdateUnitNameRequest
 from schemas.personnel.branch_with_units_response import BranchWithUnitsResponse
 from schemas.personnel.unit_nested_response import UnitNestedResponse
-from schemas.personnel.create_personnel_request import CreatePersonnelRequest
 from schemas.personnel.personnel_response import PersonnelResponse
-from schemas.personnel.update_personnel_request import UpdatePersonnelRequest
 from schemas.personnel.set_block_status_request import SetBlockStatusRequest
+from schemas.personnel.get_personnel_query import GetPersonnelQuery
+from schemas.personnel.personnel_paginated_response import PersonnelPaginatedResponse
+from schemas.personnel.personnel_detail_response import PersonnelDetailResponse
 
 from di.personnel_providers import (
     get_create_branch_uc,
@@ -27,6 +34,10 @@ from di.personnel_providers import (
     get_create_personnel_uc,
     get_update_personnel_uc,
     get_set_personnel_block_status_uc,
+    get_personnel_paginated_uc,
+    get_personnel_photo_uc,
+    get_personnel_qr_code_uc,
+    get_personnel_detail_uc,
 )
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
@@ -140,20 +151,31 @@ async def get_all_branches(
     ]
 
 
+
+
 @router.post("/", response_model=PersonnelResponse)
 async def create_personnel(
-    payload: CreatePersonnelRequest,
+    personnel_id: str = Form(...),
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    branch_id: int = Form(...),
+    unit_id: int | None = Form(None),
+    position: PersonnelPosition | None = Form(None),
+    file: UploadFile | None = File(None),
     _user=Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     create_personnel_uc = get_create_personnel_uc(session)
+    file_bytes = await file.read() if file else None
+
     personnel_entity = await create_personnel_uc.execute(
-        personnel_id=payload.personnel_id,
-        first_name=payload.first_name,
-        last_name=payload.last_name,
-        branch_id=payload.branch_id,
-        unit_id=payload.unit_id,
-        position=payload.position,
+        personnel_id=personnel_id,
+        first_name=first_name,
+        last_name=last_name,
+        branch_id=branch_id,
+        unit_id=unit_id,
+        file_bytes=file_bytes,
+        position=position,
     )
 
     return PersonnelResponse(
@@ -169,23 +191,31 @@ async def create_personnel(
     )
 
 
-
 @router.put("/{personnel_uuid}", response_model=PersonnelResponse)
 async def update_personnel(
     personnel_uuid: uuid.UUID,
-    payload: UpdatePersonnelRequest,
+    personnel_id: str = Form(...),
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    branch_id: int = Form(...),
+    unit_id: int | None = Form(None),
+    position: PersonnelPosition | None = Form(None),
+    file: UploadFile | None = File(None),
     _user=Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     update_personnel_uc = get_update_personnel_uc(session)
+    file_bytes = await file.read() if file else None
+
     personnel_entity = await update_personnel_uc.execute(
         personnel_uuid=personnel_uuid,
-        personnel_id=payload.personnel_id,
-        first_name=payload.first_name,
-        last_name=payload.last_name,
-        branch_id=payload.branch_id,
-        unit_id=payload.unit_id,
-        position=payload.position,
+        personnel_id=personnel_id,
+        first_name=first_name,
+        last_name=last_name,
+        branch_id=branch_id,
+        unit_id=unit_id,
+        position=position,
+        file_bytes=file_bytes,
     )
 
     return PersonnelResponse(
@@ -211,3 +241,105 @@ async def set_personnel_block_status(
     await set_block_status_uc.execute(personnel_uuid, payload.is_blocked)
 
     return {"success": True}
+
+
+@router.get("/", response_model=PersonnelPaginatedResponse)
+async def get_personnel_paginated(
+    query: GetPersonnelQuery = Depends(),
+    _user=Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    get_personnel_uc = get_personnel_paginated_uc(session)
+    result = await get_personnel_uc.execute(
+        page=query.page,
+        limit=query.limit,
+        search=query.search,
+        order_by=query.order_by,
+        descending=query.descending,
+    )
+
+    return PersonnelPaginatedResponse(
+        personnel=[
+            PersonnelResponse(
+                uuid=p.uuid,
+                personnel_id=p.personnel_id,
+                first_name=p.first_name,
+                last_name=p.last_name,
+                branch_id=p.branch_id,
+                unit_id=p.unit_id,
+                photo_path=p.photo_path,
+                position=p.position,
+                is_blocked=p.is_blocked,
+            )
+            for p in result["personnel"]
+        ],
+        total_count=result["total_count"],
+    )
+
+
+
+
+@router.get("/photo/{file_id}")
+async def get_personnel_photo(
+    file_id: str,
+    _rate_limit=Depends(rate_limit(scope="photo", max_requests=30, window_seconds=60)),
+):
+    get_photo_uc = get_personnel_photo_uc()
+    data = await get_photo_uc.execute(file_id)
+    return Response(content=data, media_type="image/png")
+
+@router.get("/{personnel_uuid}/qr")
+async def get_personnel_qr_code(
+    personnel_uuid: uuid.UUID,
+    _user=Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    get_qr_uc = get_personnel_qr_code_uc(session)
+    qr_bytes = await get_qr_uc.execute(personnel_uuid)
+    return Response(content=qr_bytes, media_type="image/png")
+
+
+
+
+@router.get("/{personnel_uuid}", response_model=PersonnelDetailResponse)
+async def get_personnel_detail_public(
+    personnel_uuid: uuid.UUID,
+    _rate_limit=Depends(rate_limit(scope="detail", max_requests=30, window_seconds=60)),
+    session: AsyncSession = Depends(get_session),
+):
+    get_detail_uc = get_personnel_detail_uc(session)
+    personnel = await get_detail_uc.execute(personnel_uuid)
+
+    return PersonnelDetailResponse(
+        uuid=personnel.uuid,
+        personnel_id=personnel.personnel_id,
+        first_name=personnel.first_name,
+        last_name=personnel.last_name,
+        photo_path=personnel.photo_path,
+        position=personnel.position,
+        is_blocked=personnel.is_blocked,
+        branch_name=personnel.branch_name,
+        unit_name=personnel.unit_name,
+    )
+
+
+@router.get("/verify/{personnel_uuid}", response_model=PersonnelDetailResponse)
+async def get_personnel_detail_verified(
+    personnel_uuid: uuid.UUID,
+    _api_key=Depends(verify_api_key),
+    session: AsyncSession = Depends(get_session),
+):
+    get_detail_uc = get_personnel_detail_uc(session)
+    personnel = await get_detail_uc.execute(personnel_uuid)
+
+    return PersonnelDetailResponse(
+        uuid=personnel.uuid,
+        personnel_id=personnel.personnel_id,
+        first_name=personnel.first_name,
+        last_name=personnel.last_name,
+        photo_path=personnel.photo_path,
+        position=personnel.position,
+        is_blocked=personnel.is_blocked,
+        branch_name=personnel.branch_name,
+        unit_name=personnel.unit_name,
+    )
