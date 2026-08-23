@@ -1,4 +1,4 @@
-import uuid
+import uuid as uuid_lib
 from datetime import datetime
 
 from sqlalchemy import ForeignKey, String, Boolean, DateTime, Enum as SAEnum, Index, UniqueConstraint, func
@@ -48,7 +48,7 @@ class Personnel(Base):
         ),
     )
 
-    uuid: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    uuid: Mapped[uuid_lib.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid_lib.uuid4)
     personnel_id: Mapped[str] = mapped_column(String(20), unique=True)
     first_name: Mapped[str] = mapped_column(String(50))
     last_name: Mapped[str] = mapped_column(String(50))
