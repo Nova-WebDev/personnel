@@ -6,7 +6,7 @@ import Separator from "../../base/ui/Separator";
 export const SidebarMenu = () => {
   const menu = [
     {
-      to: "/branches",
+      to: "/",
       label: "شعبه‌ها و واحدها",
       icon: faSitemap,
     },

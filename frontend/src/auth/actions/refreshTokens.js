@@ -22,9 +22,7 @@ export function refreshTokens(refreshMutate, refresh_token) {
       },
       onError: (error) => {
         if (
-          error.response?.status === 401 &&
-          error.response?.data?.detail === "Invalid refresh token"
-        ) {
+          error.response?.status === 401) {
           localStorage.removeItem("refresh_token");
           Cookies.remove("access_token");
         }
