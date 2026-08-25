@@ -15,7 +15,11 @@ class Branch(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
 
-    units: Mapped[list["Unit"]] = relationship(back_populates="branch")
+    units: Mapped[list["Unit"]] = relationship(
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
 
 class Unit(Base):
