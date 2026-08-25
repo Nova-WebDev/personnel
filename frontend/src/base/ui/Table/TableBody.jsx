@@ -1,4 +1,3 @@
-
 export default function TableBody({ data, columns, actions, mode }) {
   if (mode === "desktop") {
     return (
@@ -10,10 +9,10 @@ export default function TableBody({ data, columns, actions, mode }) {
                 key={i}
                 className={`
                   px-4 py-4 align-middle whitespace-nowrap
-                  bg-[#f5eadc] dark:bg-[#152036]
+                  bg-indigo-100 dark:bg-[#152036]
                   text-gray-800 dark:text-gray-100
                   transition-colors duration-200
-                  group-hover:bg-[#efe6d7] dark:group-hover:dark:bg-[#1a2742]
+                  group-hover:bg-indigo-200 dark:group-hover:dark:bg-[#1a2742]
                   first:rounded-r-xl
                 `}
               >
@@ -27,10 +26,10 @@ export default function TableBody({ data, columns, actions, mode }) {
               <td
                 className={`
                   px-4 py-4 align-middle whitespace-nowrap
-                  bg-[#f5eadc] dark:bg-[#152036]
+                  bg-indigo-100 dark:bg-[#152036]
                   text-gray-800 dark:text-gray-100
                   transition-colors duration-200
-                  group-hover:bg-[#efe6d7] dark:group-hover:dark:bg-[#1a2742]
+                  group-hover:bg-indigo-200 dark:group-hover:dark:bg-[#1a2742]
                   last:rounded-l-xl
                 `}
               >
@@ -53,12 +52,12 @@ export default function TableBody({ data, columns, actions, mode }) {
       <article
         key={idx}
         className="
-          bg-[#f5eadc] dark:bg-[#152036]
+          bg-indigo-100 dark:bg-[#152036]
           rounded-2xl p-4
           shadow-sm
           transition-all duration-200
           hover:shadow-md
-          hover:bg-[#efe6d7] dark:hover:bg-[#1a2742]
+          hover:bg-indigo-200 dark:hover:bg-[#1a2742]
           focus-within:shadow-md
           flex flex-col gap-3
           ring-0 outline-none

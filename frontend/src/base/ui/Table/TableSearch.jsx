@@ -31,10 +31,10 @@ export default function TableSearch({ value, onChange }) {
             className="
               w-full pr-10 pl-3 py-2 rounded-md text-sm
               bg-white dark:bg-[#182238]
-              border border-[#D3DBEB] dark:border-[#1F2A44]
+              border border-indigo-200 dark:border-[#1F2A44]
               text-gray-800 dark:text-gray-200
               placeholder-gray-400 dark:placeholder-gray-500
-              focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-sky-600
+              focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-sky-600
               transition
             "
           />
@@ -55,10 +55,10 @@ export default function TableSearch({ value, onChange }) {
             className="
               w-full pr-10 pl-3 py-2 rounded-md text-sm
               bg-white dark:bg-[#182238]
-              border border-[#D3DBEB] dark:border-[#1F2A44]
+              border border-indigo-200 dark:border-[#1F2A44]
               text-gray-800 dark:text-gray-200
               placeholder-gray-400 dark:placeholder-gray-500
-              focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-sky-600
+              focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-sky-600
               transition
             "
           />

@@ -26,9 +26,9 @@ export default function TableLimitSelector({ limit, onChange }) {
         onClick={() => setOpen(!open)}
         className="
           px-3 py-2 rounded-md flex items-center gap-2 text-sm
-          bg-[#fbf3e9] dark:bg-[#152036]
+          bg-indigo-100 dark:bg-[#152036]
           text-gray-800 dark:text-gray-200
-          border border-gray-300 dark:border-gray-700/40
+          border border-indigo-200 dark:border-gray-700/40
         "
       >
         <span>{limit}</span>
@@ -47,8 +47,8 @@ export default function TableLimitSelector({ limit, onChange }) {
         <div
           className="
             absolute left-0 bottom-full mb-2 w-40 rounded-md shadow-xl z-50 overflow-hidden
-            bg-[#fbf3e9] dark:bg-[#152036]
-            border border-gray-300 dark:border-gray-700
+            bg-indigo-100 dark:bg-[#152036]
+            border border-indigo-200 dark:border-gray-700
           "
         >
           {options.map((opt) => (
@@ -62,15 +62,15 @@ export default function TableLimitSelector({ limit, onChange }) {
                 w-full px-3 py-2 text-left text-sm flex items-center justify-between
                 ${
                   limit === opt
-                    ? "bg-[#fcf8f0] dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-                    : "text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#111a2b]"
+                    ? "bg-indigo-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                    : "text-gray-600 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-[#111a2b]"
                 }
               `}
             >
               <span>{opt}</span>
 
               {limit === opt && (
-                <span className="inline-block w-2 h-2 rounded-full bg-[#f17c4a] dark:bg-[#43f9e4]" />
+                <span className="inline-block w-2 h-2 rounded-full bg-indigo-600 dark:bg-[#43f9e4]" />
               )}
             </button>
           ))}

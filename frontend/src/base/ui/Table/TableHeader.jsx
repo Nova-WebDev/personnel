@@ -19,11 +19,11 @@ export default function TableHeader({ columns, orderBy, deorder, onSort }) {
             key={i}
             onClick={() => col.orderBy && onSort(col.orderBy)}
             className={`
-              px-6 py-5 font-semibold text-left whitespace-nowrap transition select-none
+              px-6 py-6 font-semibold text-left whitespace-nowrap transition select-none
               ${col.orderBy ? "cursor-pointer" : ""}
-              ${isActive(col) ? "text-orange-300" : "text-gray-100"}
+              ${isActive(col) ? "text-indigo-200" : "text-gray-100"}
               ${i === 0 ? "rounded-br-xl rounded-tr-xl" : ""}
-              bg-[#b23d0f] dark:bg-[#002856]
+              bg-indigo-600 dark:bg-[#002856]
             `}
           >
             <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export default function TableHeader({ columns, orderBy, deorder, onSort }) {
                   <FontAwesomeIcon
                     icon={getIcon(col)}
                     className={`text-[12px] ${
-                      isActive(col) ? "text-orange-300" : "text-gray-100"
+                      isActive(col) ? "text-indigo-200" : "text-gray-100"
                     }`}
                   />
                 </span>
@@ -45,7 +45,7 @@ export default function TableHeader({ columns, orderBy, deorder, onSort }) {
         <th
           className="
             px-6 py-5 font-semibold text-left text-gray-100 whitespace-nowrap
-            bg-[#b23d0f] dark:bg-[#002856]
+            bg-indigo-600 dark:bg-[#002856]
             rounded-bl-xl rounded-tl-xl
           "
         >

@@ -5,7 +5,7 @@ export const BranchHeader = () => {
   const [openBranchModal, setOpenBranchModal] = useState(false);
 
   return (
-    <div className="flex items-center justify-between w-full mt-5 mb-5 md:mb-2 md:px-7">
+    <div className="flex items-center justify-between w-full mt-5 mb-5 md:mb-2 md:px-4">
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setOpenBranchModal(true)}

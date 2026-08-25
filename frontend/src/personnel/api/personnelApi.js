@@ -1,4 +1,5 @@
 import api from "../../shared/lib/axios";
+import axiosMultipart from "../../shared/lib/axiosMultipart";
 
 function buildPersonnelFormData({
   personnelId,
@@ -28,16 +29,12 @@ function buildPersonnelFormData({
 
 export function createPersonnel(payload) {
   const formData = buildPersonnelFormData(payload);
-  return api.post("/personnel/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return axiosMultipart.post("/personnel/", formData);
 }
 
 export function updatePersonnel(personnelUuid, payload) {
   const formData = buildPersonnelFormData(payload);
-  return api.put(`/personnel/${personnelUuid}`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return axiosMultipart.put(`/personnel/${personnelUuid}`, formData);
 }
 
 export function setPersonnelBlockStatus(personnelUuid, isBlocked) {

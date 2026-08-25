@@ -17,9 +17,9 @@ export default function TablePagination({ page, total, limit, onPageChange }) {
   const base =
     "inline-flex items-center justify-center rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1";
   const enabled =
-    "bg-[#E9EFFB] dark:bg-[#152036] hover:bg-[#d7dfef] dark:hover:bg-[#1a2742]";
+    "bg-indigo-100 dark:bg-[#152036] hover:bg-indigo-200 dark:hover:bg-[#1a2742]";
   const disabled =
-    "bg-[#E9EFFB]/60 dark:bg-[#152036]/60 cursor-not-allowed opacity-20";
+    "bg-indigo-100/60 dark:bg-[#152036]/60 cursor-not-allowed opacity-20";
   const txt = "text-gray-800 dark:text-gray-200";
 
   return (
@@ -43,7 +43,7 @@ export default function TablePagination({ page, total, limit, onPageChange }) {
           <FontAwesomeIcon icon={faChevronRight} />
         </button>
 
-        <div className="px-3 py-2 rounded-lg bg-[#ffffff] dark:bg-[#0b1a2b] text-sm flex items-center gap-2">
+        <div className="px-3 py-2 rounded-lg bg-indigo-50 dark:bg-[#0b1a2b] text-sm flex items-center gap-2">
           <span className="font-medium text-gray-800 dark:text-gray-200">
             {page}
           </span>
@@ -80,7 +80,7 @@ export default function TablePagination({ page, total, limit, onPageChange }) {
           <FontAwesomeIcon icon={faChevronRight} />
         </button>
 
-        <div className="px-3 py-2 rounded-lg bg-[#E9EFFB] dark:bg-[#152036] text-sm text-center min-w-22">
+        <div className="px-3 py-2 rounded-lg bg-indigo-100 dark:bg-[#152036] text-sm text-center min-w-22">
           <span className="text-gray-600 dark:text-gray-300">
             {" "}
             {page} / {totalPages}{" "}

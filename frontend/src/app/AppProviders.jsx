@@ -9,6 +9,10 @@ import { useRefreshToken } from "../auth/hooks/useRefreshToken";
 import { refreshTokens } from "../auth/actions/refreshTokens";
 import { redirectWithRules } from "../shared/utils/redirectWithRules";
 
+function isFullyPublicPath(path) {
+  return path.startsWith("/card");
+}
+
 export default function AppProviders({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,8 +29,13 @@ export default function AppProviders({ children }) {
   }, [navigate, location]);
 
   useEffect(() => {
+    if (isFullyPublicPath(locationRef.current.pathname)) return;
+
     const check = () => {
       const path = locationRef.current.pathname;
+
+      if (isFullyPublicPath(path)) return;
+
       const refresh_token = localStorage.getItem("refresh_token");
       const access_token = Cookies.get("access_token");
 
@@ -83,6 +92,7 @@ export default function AppProviders({ children }) {
 
   useEffect(() => {
     if (!isReady) return;
+    if (isFullyPublicPath(path)) return;
 
     const refresh_token = localStorage.getItem("refresh_token");
 

@@ -4,20 +4,20 @@ import { faCompass, faHome, faRotate } from "@fortawesome/free-solid-svg-icons";
 
 export default function NotFound() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#FFF8F3] dark:bg-[#1a120b]">
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#F5F6FD] dark:bg-[#0b1020]">
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute -left-32 -top-32 w-[55vmax] h-[55vmax] rounded-full blur-[90px] opacity-40 dark:opacity-30"
           style={{
             background:
-              "radial-gradient(circle at 30% 30%, rgba(251,146,60,0.28), transparent 40%), radial-gradient(circle at 70% 70%, rgba(249,115,22,0.22), transparent 45%)",
+              "radial-gradient(circle at 30% 30%, rgba(99,102,241,0.28), transparent 40%), radial-gradient(circle at 70% 70%, rgba(129,140,248,0.22), transparent 45%)",
           }}
         />
         <div
           className="absolute -right-32 -bottom-32 w-[50vmax] h-[50vmax] rounded-full blur-[80px] opacity-35 dark:opacity-25"
           style={{
             background:
-              "radial-gradient(circle at 20% 20%, rgba(234,88,12,0.22), transparent 35%), radial-gradient(circle at 80% 80%, rgba(194,65,12,0.18), transparent 40%)",
+              "radial-gradient(circle at 20% 20%, rgba(79,70,229,0.22), transparent 35%), radial-gradient(circle at 80% 80%, rgba(67,56,202,0.18), transparent 40%)",
           }}
         />
       </div>
@@ -55,7 +55,7 @@ export default function NotFound() {
         <div className="flex gap-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 text-gray-900 transition border border-gray-200 cursor-pointer rounded-xl bg-orange-500/20 dark:bg-orange-500/10 dark:text-gray-100 backdrop-blur-md dark:border-orange-500/20 hover:bg-orange-500/30 dark:hover:bg-orange-500/20"
+            className="inline-flex items-center gap-2 px-6 py-3 text-gray-900 transition border border-indigo-200 cursor-pointer rounded-xl bg-indigo-500/15 dark:bg-indigo-500/10 dark:text-gray-100 backdrop-blur-md dark:border-indigo-500/20 hover:bg-indigo-500/25 dark:hover:bg-indigo-500/20"
           >
             <FontAwesomeIcon icon={faHome} />
             Home
@@ -63,7 +63,7 @@ export default function NotFound() {
 
           <button
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-6 py-3 text-gray-900 transition border border-gray-200 cursor-pointer rounded-xl bg-orange-500/20 dark:bg-orange-500/10 dark:text-gray-200 hover:bg-orange-500/30 dark:hover:bg-orange-500/20 backdrop-blur-md"
+            className="inline-flex items-center gap-2 px-6 py-3 text-gray-900 transition border border-indigo-200 cursor-pointer rounded-xl bg-indigo-500/15 dark:bg-indigo-500/10 dark:text-gray-200 hover:bg-indigo-500/25 dark:hover:bg-indigo-500/20 backdrop-blur-md"
           >
             <FontAwesomeIcon icon={faRotate} />
             Retry

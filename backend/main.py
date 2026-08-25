@@ -26,7 +26,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.exception_handler(DomainError)
 async def domain_error_handler(_request: Request, exc: DomainError) -> JSONResponse:
-    if exc.status_code != 200:
+    if exc.status_code >= 500:
         logger.error(str(exc), exc_info=True)
     return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)})
 

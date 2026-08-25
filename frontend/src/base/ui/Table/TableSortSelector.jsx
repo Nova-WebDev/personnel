@@ -23,7 +23,7 @@ export default function TableSortSelector({ columns, orderBy, deorder, onSort })
     <div className="relative mr-2 md:ml-3 md:hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="px-3 py-2 bg-white dark:bg-[#182238] rounded-md flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700/40"
+        className="px-3 py-2 bg-white dark:bg-[#182238] rounded-md flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 border border-indigo-200 dark:border-gray-700/40"
       >
         <span>Sort</span>
         <span className="inline-flex items-center justify-center w-5 h-5 ml-auto rounded-full">
@@ -37,7 +37,7 @@ export default function TableSortSelector({ columns, orderBy, deorder, onSort })
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-2 w-52 bg-white dark:bg-[#0f1724] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute left-0 mt-2 w-52 bg-white dark:bg-[#0f1724] border border-indigo-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
           {columns
             .filter((c) => c.orderBy)
             .map((col, i) => (
@@ -49,8 +49,8 @@ export default function TableSortSelector({ columns, orderBy, deorder, onSort })
                 }}
                 className={`w-full px-3 py-2 text-left flex items-center justify-between text-sm ${
                   isActive(col)
-                    ? "bg-blue-50 dark:bg-[#111a2b] text-blue-700 dark:text-blue-300"
-                    : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#111a2b]"
+                    ? "bg-indigo-50 dark:bg-[#111a2b] text-indigo-700 dark:text-indigo-300"
+                    : "text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-[#111a2b]"
                 }`}
               >
                 <span>{col.label}</span>
