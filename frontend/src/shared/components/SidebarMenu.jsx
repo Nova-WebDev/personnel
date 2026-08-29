@@ -1,9 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSitemap, faIdCard } from "@fortawesome/free-solid-svg-icons";
+import { faSitemap, faIdCard, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import Separator from "../../base/ui/Separator";
+import { useLogout } from "../../auth/hooks/useLogout";
 
 export const SidebarMenu = () => {
+  const logoutMutation = useLogout();
+
   const menu = [
     {
       to: "/",
@@ -17,8 +20,13 @@ export const SidebarMenu = () => {
     },
   ];
 
+  const handleLogout = () => {
+    const refresh_token = localStorage.getItem("refresh_token");
+    logoutMutation.mutate({ refresh_token });
+  };
+
   return (
-    <div className="w-full h-full bg-[#F4F4F5] dark:bg-[#111C2E] border-l border-gray-300 dark:border-gray-700 pt-6 px-3">
+    <div className="w-full h-full bg-[#F4F4F5] dark:bg-[#111C2E] border-l border-gray-300 dark:border-gray-700 pt-6 px-3 flex flex-col">
 
       <div className="pr-1 mb-5 mr-2 text-lg font-bold tracking-wide text-gray-700 dark:text-gray-300">
         منوی اصلی
@@ -44,6 +52,20 @@ export const SidebarMenu = () => {
             <span>{item.label}</span>
           </NavLink>
         ))}
+      </div>
+
+      <div className="flex-1" />
+
+      <div className="mb-6">
+        <Separator width="90%" />
+        <button
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className="flex items-center w-full gap-3 px-4 py-3 mt-3 text-red-600 transition rounded-lg cursor-pointer dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <FontAwesomeIcon icon={faRightFromBracket} className="w-5 h-5" />
+          <span>{logoutMutation.isPending ? "در حال خروج..." : "خروج از حساب"}</span>
+        </button>
       </div>
     </div>
   );
