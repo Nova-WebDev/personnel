@@ -1,7 +1,0 @@
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class BranchEntity:
-    id: int
-    name: str
