@@ -10,6 +10,7 @@ class UserModel(Base):
     last_name = Column(String(50), nullable=False)
     personnel_code = Column(String(4), nullable=True, unique=True)
     rfid_card_id = Column(String(10), nullable=True, unique=True)
+    photo_path = Column(String(255), nullable=True)
     unit_id = Column(String(36), ForeignKey("units.id", ondelete="SET NULL"), nullable=True)
     is_blocked = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

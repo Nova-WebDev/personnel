@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Enum as SAEnum, ForeignKey, Index
+from sqlalchemy import Column, String, Enum as SAEnum, ForeignKey, Index, UniqueConstraint
 from app.data.base import Base
 from user.core.entities.permission_level import PermissionLevel
 
@@ -13,4 +13,5 @@ class PermissionModel(Base):
     __table_args__ = (
         Index("idx_permission_user", "user_id"),
         Index("idx_permission_group_level", "group_id", "level"),
+        UniqueConstraint("user_id", "level", "group_id", name="uq_permission_user_level_group"),
     )

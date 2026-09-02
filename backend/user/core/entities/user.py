@@ -9,6 +9,7 @@ class User:
     last_name: str
     personnel_code: str | None
     rfid_card_id: str | None
+    photo_path: str | None
     unit_id: str | None
     is_blocked: bool
     created_at: datetime
