@@ -16,6 +16,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
   postgres:
     build:
       context: ./postgres
@@ -37,6 +38,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
   backend:
     build:
       context: ./backend
@@ -65,6 +67,28 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  websocket-gateway:
+    build:
+      context: ./websocket-gateway
+      dockerfile: Dockerfile
+    container_name: personnel_websocket_gateway
+    networks:
+      - personnel_net
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+    restart: unless-stopped
+    volumes:
+      - ./websocket-gateway/key:/app/key:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   nginx:
     build:
       context: ./nginx
@@ -79,10 +103,14 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      websocket-gateway:
+        condition: service_healthy
     restart: unless-stopped
+
 networks:
   personnel_net:
     driver: bridge
+
 volumes:
   personnel_pg_data:
   personnel_media:
