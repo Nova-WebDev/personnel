@@ -7,6 +7,7 @@ from app.utils.logger import logger
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from routers.app_router import router as app_router
+from routers.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -27,3 +28,4 @@ async def domain_error_handler(_request: Request, exc: DomainError) -> JSONRespo
 
 
 app.include_router(app_router, prefix="/app", tags=["app"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])

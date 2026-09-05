@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Index, CheckConstraint, func
+from sqlalchemy.orm import relationship
 from app.data.base import Base
 
 class UserModel(Base):
@@ -14,6 +15,8 @@ class UserModel(Base):
     unit_id = Column(String(36), ForeignKey("units.id", ondelete="SET NULL"), nullable=True)
     is_blocked = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    permissions = relationship("PermissionModel", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("idx_user_phone", "phone"),
