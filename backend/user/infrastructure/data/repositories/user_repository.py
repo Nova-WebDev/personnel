@@ -18,3 +18,8 @@ class UserRepository(IUserRepository):
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_user_ids_by_unit(self, unit_id: str) -> list[str]:
+        stmt = select(UserModel.id).where(UserModel.unit_id == unit_id)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())

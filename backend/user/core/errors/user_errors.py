@@ -20,3 +20,10 @@ class UnitNameConflictError(DomainError):
 
     def __init__(self, message: str = "A unit with this name already exists in this branch"):
         super().__init__(message)
+
+
+class UnitNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Unit not found"):
+        super().__init__(message)

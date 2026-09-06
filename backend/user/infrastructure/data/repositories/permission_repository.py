@@ -27,3 +27,11 @@ class PermissionRepository(IPermissionRepository):
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_global_and_unit_scoped_user_ids(self, unit_id: str) -> list[str]:
+        stmt = select(PermissionModel.user_id).where(
+            (PermissionModel.group_id.is_(None))
+            | (PermissionModel.group_id == unit_id)
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())

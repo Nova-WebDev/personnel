@@ -6,6 +6,10 @@ from app.events.redis_event_publisher import RedisEventPublisher
 from user.core.use_cases.create_branch import CreateBranch
 from user.core.use_cases.update_branch import UpdateBranch
 from user.core.use_cases.create_unit import CreateUnit
+from user.core.use_cases.update_unit import UpdateUnit
+from user.core.use_cases.delete_branch import DeleteBranch
+from user.core.use_cases.delete_unit import DeleteUnit
+from user.core.use_cases.get_branches_with_units import GetBranchesWithUnits
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -34,4 +38,33 @@ def get_create_unit_uc(session: AsyncSession) -> CreateUnit:
         unit_repository=UnitRepository(session),
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
+    )
+
+def get_update_unit_uc(session: AsyncSession) -> UpdateUnit:
+    return UpdateUnit(
+        unit_repository=UnitRepository(session),
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+def get_delete_branch_uc(session: AsyncSession) -> DeleteBranch:
+    return DeleteBranch(
+        branch_repository=BranchRepository(session),
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+def get_delete_unit_uc(session: AsyncSession) -> DeleteUnit:
+    return DeleteUnit(
+        unit_repository=UnitRepository(session),
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+def get_branches_with_units_uc(session: AsyncSession) -> GetBranchesWithUnits:
+    return GetBranchesWithUnits(
+        branch_repository=BranchRepository(session),
     )
