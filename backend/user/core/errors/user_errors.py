@@ -1,0 +1,22 @@
+from app.utils.errors import DomainError
+
+
+class BranchNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Branch not found"):
+        super().__init__(message)
+
+
+class PermissionDeniedError(DomainError):
+    status_code = 403
+
+    def __init__(self, message: str = "Admin permission required"):
+        super().__init__(message)
+
+
+class UnitNameConflictError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "A unit with this name already exists in this branch"):
+        super().__init__(message)
