@@ -8,7 +8,7 @@ from schemas.user.update_unit_request import UpdateUnitRequest
 from schemas.user.branch_with_units_response import BranchWithUnitsResponse, UnitResponse
 from schemas.user.user_with_location_response import UserWithLocationResponse
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -134,6 +134,36 @@ async def create_user(
     file_bytes = await photo.read() if photo is not None else None
 
     await create_user_uc.execute(
+        phone=phone,
+        first_name=first_name,
+        last_name=last_name,
+        unit_id=unit_id,
+        permissions=_user.permissions,
+        personnel_code=personnel_code,
+        file_bytes=file_bytes,
+    )
+
+    return {"success": True}
+
+
+@router.patch("/user/{user_id}")
+async def update_user(
+    user_id: str,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+    phone: str = Form(...),
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    unit_id: str = Form(...),
+    personnel_code: str | None = Form(None),
+    photo: UploadFile | None = File(None),
+):
+    update_user_uc = get_update_user_uc(session)
+
+    file_bytes = await photo.read() if photo is not None else None
+
+    await update_user_uc.execute(
+        user_id=user_id,
         phone=phone,
         first_name=first_name,
         last_name=last_name,

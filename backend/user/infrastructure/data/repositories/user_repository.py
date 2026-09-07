@@ -1,7 +1,12 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from user.core.errors.user_errors import UnitNotFoundError, PhoneConflictError, PersonnelCodeConflictError
+from user.core.errors.user_errors import (
+    UnitNotFoundError,
+    PhoneConflictError,
+    PersonnelCodeConflictError,
+    UserNotFoundError,
+)
 from user.core.interfaces.user_repository import IUserRepository
 from user.infrastructure.data.models.user import UserModel
 from user.infrastructure.data.models.unit import UnitModel
@@ -38,14 +43,14 @@ class UserRepository(IUserRepository):
         return [self._to_entity(row) for row in result.all()]
 
     async def create(
-            self,
-            user_id: str,
-            phone: str,
-            first_name: str,
-            last_name: str,
-            unit_id: str,
-            personnel_code: str | None,
-            photo_path: str | None,
+        self,
+        user_id: str,
+        phone: str,
+        first_name: str,
+        last_name: str,
+        unit_id: str,
+        personnel_code: str | None,
+        photo_path: str | None,
     ) -> UserWithLocation:
         await self._validate_unit_exists(unit_id)
         await self._validate_phone_unique(phone)
@@ -71,6 +76,51 @@ class UserRepository(IUserRepository):
         row = result.one()
 
         return self._to_entity(row)
+
+    async def update(
+        self,
+        user_id: str,
+        phone: str,
+        first_name: str,
+        last_name: str,
+        unit_id: str,
+        personnel_code: str | None,
+    ) -> tuple[UserWithLocation, str | None]:
+        model = await self._session.get(UserModel, user_id)
+
+        if model is None:
+            raise UserNotFoundError()
+
+        previous_photo_path = model.photo_path
+
+        if phone != model.phone:
+            await self._validate_phone_unique(phone)
+
+        if personnel_code != model.personnel_code and personnel_code is not None:
+            await self._validate_personnel_code_unique(personnel_code)
+
+        if unit_id != model.unit_id:
+            await self._validate_unit_exists(unit_id)
+
+        model.phone = phone
+        model.first_name = first_name
+        model.last_name = last_name
+        model.unit_id = unit_id
+        model.personnel_code = personnel_code
+
+        await self._session.flush()
+        await self._session.refresh(model)
+
+        stmt = self._select_with_location().where(UserModel.id == model.id)
+        result = await self._session.execute(stmt)
+        row = result.one()
+
+        return self._to_entity(row), previous_photo_path
+
+    async def set_photo_path(self, user_id: str, photo_path: str) -> None:
+        stmt = update(UserModel).where(UserModel.id == user_id).values(photo_path=photo_path)
+        await self._session.execute(stmt)
+        await self._session.flush()
 
     @staticmethod
     def _select_with_location():

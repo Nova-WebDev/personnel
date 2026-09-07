@@ -41,3 +41,10 @@ class PersonnelCodeConflictError(DomainError):
 
     def __init__(self, message: str = "A user with this personnel code already exists"):
         super().__init__(message)
+
+
+class UserNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "User not found"):
+        super().__init__(message)

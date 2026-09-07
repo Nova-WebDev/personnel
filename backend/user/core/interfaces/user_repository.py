@@ -21,13 +21,29 @@ class IUserRepository(ABC):
 
     @abstractmethod
     async def create(
-            self,
-            user_id: str,
-            phone: str,
-            first_name: str,
-            last_name: str,
-            unit_id: str,
-            personnel_code: str | None,
-            photo_path: str | None,
+        self,
+        user_id: str,
+        phone: str,
+        first_name: str,
+        last_name: str,
+        unit_id: str,
+        personnel_code: str | None,
+        photo_path: str | None,
     ) -> UserWithLocation:
+        pass
+
+    @abstractmethod
+    async def update(
+        self,
+        user_id: str,
+        phone: str,
+        first_name: str,
+        last_name: str,
+        unit_id: str,
+        personnel_code: str | None,
+    ) -> tuple[UserWithLocation, str | None]:
+        pass
+
+    @abstractmethod
+    async def set_photo_path(self, user_id: str, photo_path: str) -> None:
         pass
