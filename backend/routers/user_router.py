@@ -6,8 +6,9 @@ from schemas.user.update_branch_request import UpdateBranchRequest
 from schemas.user.create_unit_request import CreateUnitRequest
 from schemas.user.update_unit_request import UpdateUnitRequest
 from schemas.user.branch_with_units_response import BranchWithUnitsResponse, UnitResponse
+from schemas.user.user_with_location_response import UserWithLocationResponse
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -104,3 +105,13 @@ async def get_branches(
         )
         for b in branches
     ]
+
+@router.get("/users", response_model=list[UserWithLocationResponse])
+async def get_users(
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    get_users_uc = get_users_with_location_uc(session)
+    users = await get_users_uc.execute(_user.permissions)
+
+    return [UserWithLocationResponse(**vars(u)) for u in users]

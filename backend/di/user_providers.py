@@ -10,6 +10,7 @@ from user.core.use_cases.update_unit import UpdateUnit
 from user.core.use_cases.delete_branch import DeleteBranch
 from user.core.use_cases.delete_unit import DeleteUnit
 from user.core.use_cases.get_branches_with_units import GetBranchesWithUnits
+from user.core.use_cases.get_users_with_location import GetUsersWithLocation
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -67,4 +68,9 @@ def get_delete_unit_uc(session: AsyncSession) -> DeleteUnit:
 def get_branches_with_units_uc(session: AsyncSession) -> GetBranchesWithUnits:
     return GetBranchesWithUnits(
         branch_repository=BranchRepository(session),
+    )
+
+def get_users_with_location_uc(session: AsyncSession) -> GetUsersWithLocation:
+    return GetUsersWithLocation(
+        user_repository=UserRepository(session),
     )
