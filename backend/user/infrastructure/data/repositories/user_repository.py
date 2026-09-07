@@ -38,13 +38,14 @@ class UserRepository(IUserRepository):
         return [self._to_entity(row) for row in result.all()]
 
     async def create(
-        self,
-        phone: str,
-        first_name: str,
-        last_name: str,
-        unit_id: str,
-        personnel_code: str | None,
-        photo_path: str | None,
+            self,
+            user_id: str,
+            phone: str,
+            first_name: str,
+            last_name: str,
+            unit_id: str,
+            personnel_code: str | None,
+            photo_path: str | None,
     ) -> UserWithLocation:
         await self._validate_unit_exists(unit_id)
         await self._validate_phone_unique(phone)
@@ -53,6 +54,7 @@ class UserRepository(IUserRepository):
             await self._validate_personnel_code_unique(personnel_code)
 
         model = UserModel(
+            id=user_id,
             phone=phone,
             first_name=first_name,
             last_name=last_name,

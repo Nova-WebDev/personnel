@@ -1,8 +1,14 @@
+import uuid
+
 from user.core.interfaces.user_repository import IUserRepository
 from user.core.interfaces.permission_repository import IPermissionRepository
+from app.interfaces.image_format_validator import IImageFormatValidator
+from app.interfaces.image_processor import IImageProcessor
 from app.interfaces.event_publisher import IEventPublisher
 from user.core.errors.user_errors import PermissionDeniedError
 from user.core.entities.permission_level import PermissionLevel
+
+PHOTO_FOLDER = "profile"
 
 
 class CreateUser:
@@ -11,10 +17,14 @@ class CreateUser:
         user_repository: IUserRepository,
         permission_repository: IPermissionRepository,
         event_publisher: IEventPublisher,
+        format_validator: IImageFormatValidator,
+        image_processor: IImageProcessor,
     ):
         self.user_repository = user_repository
         self.permission_repository = permission_repository
         self.event_publisher = event_publisher
+        self.format_validator = format_validator
+        self.image_processor = image_processor
 
     async def execute(
         self,
@@ -24,11 +34,18 @@ class CreateUser:
         unit_id: str,
         permissions: list[dict],
         personnel_code: str | None = None,
-        photo_path: str | None = None,
+        file_bytes: bytes | None = None,
     ) -> None:
         self._authorize(unit_id, permissions)
 
+        if file_bytes is not None:
+            await self.format_validator.validate(file_bytes)
+
+        user_id = str(uuid.uuid4())
+        photo_path = f"{PHOTO_FOLDER}/{user_id}" if file_bytes is not None else None
+
         user = await self.user_repository.create(
+            user_id=user_id,
             phone=phone,
             first_name=first_name,
             last_name=last_name,
@@ -36,6 +53,15 @@ class CreateUser:
             personnel_code=personnel_code,
             photo_path=photo_path,
         )
+
+        if file_bytes is not None:
+            await self.image_processor.process(
+                folder=PHOTO_FOLDER,
+                file_id=user_id,
+                file_bytes=file_bytes,
+                resize_to=(600, 600),
+                force_png=True,
+            )
 
         targets = await self.permission_repository.get_global_and_unit_scoped_user_ids(unit_id)
 

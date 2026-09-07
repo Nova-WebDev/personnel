@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.redis.redis_client import redis_client
 from app.events.redis_event_publisher import RedisEventPublisher
 
+from app.images.image_format_validator import ImageFormatValidator
+from app.images.local_image_processor import LocalImageProcessor
+
 from user.core.use_cases.create_branch import CreateBranch
 from user.core.use_cases.update_branch import UpdateBranch
 from user.core.use_cases.create_unit import CreateUnit
@@ -76,9 +79,12 @@ def get_users_with_location_uc(session: AsyncSession) -> GetUsersWithLocation:
         user_repository=UserRepository(session),
     )
 
+
 def get_create_user_uc(session: AsyncSession) -> CreateUser:
     return CreateUser(
         user_repository=UserRepository(session),
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
+        format_validator=ImageFormatValidator(),
+        image_processor=LocalImageProcessor(),
     )

@@ -22,6 +22,7 @@ class IUserRepository(ABC):
     @abstractmethod
     async def create(
             self,
+            user_id: str,
             phone: str,
             first_name: str,
             last_name: str,
