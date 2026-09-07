@@ -7,8 +7,9 @@ from schemas.user.create_unit_request import CreateUnitRequest
 from schemas.user.update_unit_request import UpdateUnitRequest
 from schemas.user.branch_with_units_response import BranchWithUnitsResponse, UnitResponse
 from schemas.user.user_with_location_response import UserWithLocationResponse
+from schemas.user.create_user_request import CreateUserRequest
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -115,3 +116,22 @@ async def get_users(
     users = await get_users_uc.execute(_user.permissions)
 
     return [UserWithLocationResponse(**vars(u)) for u in users]
+
+@router.post("/user")
+async def create_user(
+    payload: CreateUserRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    create_user_uc = get_create_user_uc(session)
+    await create_user_uc.execute(
+        phone=payload.phone,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        unit_id=payload.unit_id,
+        permissions=_user.permissions,
+        personnel_code=payload.personnel_code,
+        photo_path=payload.photo_path,
+    )
+
+    return {"success": True}

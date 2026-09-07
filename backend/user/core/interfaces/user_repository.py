@@ -18,3 +18,15 @@ class IUserRepository(ABC):
     @abstractmethod
     async def get_by_unit_ids_with_location(self, unit_ids: list[str]) -> list[UserWithLocation]:
         pass
+
+    @abstractmethod
+    async def create(
+            self,
+            phone: str,
+            first_name: str,
+            last_name: str,
+            unit_id: str,
+            personnel_code: str | None,
+            photo_path: str | None,
+    ) -> UserWithLocation:
+        pass

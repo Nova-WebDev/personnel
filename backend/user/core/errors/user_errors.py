@@ -27,3 +27,17 @@ class UnitNotFoundError(DomainError):
 
     def __init__(self, message: str = "Unit not found"):
         super().__init__(message)
+
+
+class PhoneConflictError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "A user with this phone number already exists"):
+        super().__init__(message)
+
+
+class PersonnelCodeConflictError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "A user with this personnel code already exists"):
+        super().__init__(message)

@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from user.core.errors.user_errors import UnitNotFoundError, PhoneConflictError, PersonnelCodeConflictError
 from user.core.interfaces.user_repository import IUserRepository
 from user.infrastructure.data.models.user import UserModel
 from user.infrastructure.data.models.unit import UnitModel
@@ -36,6 +37,39 @@ class UserRepository(IUserRepository):
         result = await self._session.execute(stmt)
         return [self._to_entity(row) for row in result.all()]
 
+    async def create(
+        self,
+        phone: str,
+        first_name: str,
+        last_name: str,
+        unit_id: str,
+        personnel_code: str | None,
+        photo_path: str | None,
+    ) -> UserWithLocation:
+        await self._validate_unit_exists(unit_id)
+        await self._validate_phone_unique(phone)
+
+        if personnel_code is not None:
+            await self._validate_personnel_code_unique(personnel_code)
+
+        model = UserModel(
+            phone=phone,
+            first_name=first_name,
+            last_name=last_name,
+            unit_id=unit_id,
+            personnel_code=personnel_code,
+            photo_path=photo_path,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        await self._session.refresh(model)
+
+        stmt = self._select_with_location().where(UserModel.id == model.id)
+        result = await self._session.execute(stmt)
+        row = result.one()
+
+        return self._to_entity(row)
+
     @staticmethod
     def _select_with_location():
         return (
@@ -63,3 +97,20 @@ class UserRepository(IUserRepository):
             branch_id=branch_id,
             branch_name=branch_name,
         )
+
+    async def _validate_unit_exists(self, unit_id: str) -> None:
+        unit = await self._session.get(UnitModel, unit_id)
+        if unit is None:
+            raise UnitNotFoundError()
+
+    async def _validate_phone_unique(self, phone: str) -> None:
+        stmt = select(UserModel.id).where(UserModel.phone == phone)
+        result = await self._session.execute(stmt)
+        if result.scalar_one_or_none() is not None:
+            raise PhoneConflictError()
+
+    async def _validate_personnel_code_unique(self, personnel_code: str) -> None:
+        stmt = select(UserModel.id).where(UserModel.personnel_code == personnel_code)
+        result = await self._session.execute(stmt)
+        if result.scalar_one_or_none() is not None:
+            raise PersonnelCodeConflictError()

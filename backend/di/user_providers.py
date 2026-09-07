@@ -11,6 +11,7 @@ from user.core.use_cases.delete_branch import DeleteBranch
 from user.core.use_cases.delete_unit import DeleteUnit
 from user.core.use_cases.get_branches_with_units import GetBranchesWithUnits
 from user.core.use_cases.get_users_with_location import GetUsersWithLocation
+from user.core.use_cases.create_user import CreateUser
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -73,4 +74,11 @@ def get_branches_with_units_uc(session: AsyncSession) -> GetBranchesWithUnits:
 def get_users_with_location_uc(session: AsyncSession) -> GetUsersWithLocation:
     return GetUsersWithLocation(
         user_repository=UserRepository(session),
+    )
+
+def get_create_user_uc(session: AsyncSession) -> CreateUser:
+    return CreateUser(
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
     )
