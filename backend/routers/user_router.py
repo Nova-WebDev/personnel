@@ -7,8 +7,9 @@ from schemas.user.create_unit_request import CreateUnitRequest
 from schemas.user.update_unit_request import UpdateUnitRequest
 from schemas.user.branch_with_units_response import BranchWithUnitsResponse, UnitResponse
 from schemas.user.user_with_location_response import UserWithLocationResponse
+from schemas.user.set_blocked_status_request import SetBlockedStatusRequest
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -188,3 +189,15 @@ async def get_profile_photo(
     get_photo_uc = get_profile_photo_uc()
     data = await get_photo_uc.execute(file_id)
     return Response(content=data, media_type="image/png")
+
+@router.patch("/user/{user_id}/blocked-status")
+async def set_user_blocked_status(
+    user_id: str,
+    payload: SetBlockedStatusRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    set_blocked_status_uc = get_set_user_blocked_status_uc(session)
+    await set_blocked_status_uc.execute(user_id, payload.is_blocked, _user.permissions)
+
+    return {"success": True}

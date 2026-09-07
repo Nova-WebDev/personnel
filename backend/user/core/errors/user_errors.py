@@ -48,3 +48,10 @@ class UserNotFoundError(DomainError):
 
     def __init__(self, message: str = "User not found"):
         super().__init__(message)
+
+
+class PhotoNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Photo not found"):
+        super().__init__(message)

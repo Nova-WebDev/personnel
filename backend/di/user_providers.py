@@ -17,6 +17,7 @@ from user.core.use_cases.get_users_with_location import GetUsersWithLocation
 from user.core.use_cases.create_user import CreateUser
 from user.core.use_cases.update_user import UpdateUser
 from user.core.use_cases.get_profile_photo import GetProfilePhoto
+from user.core.use_cases.set_user_blocked_status import SetUserBlockedStatus
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -105,4 +106,11 @@ def get_update_user_uc(session: AsyncSession) -> UpdateUser:
 def get_profile_photo_uc() -> GetProfilePhoto:
     return GetProfilePhoto(
         image_processor=LocalImageProcessor(),
+    )
+
+def get_set_user_blocked_status_uc(session: AsyncSession) -> SetUserBlockedStatus:
+    return SetUserBlockedStatus(
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
     )

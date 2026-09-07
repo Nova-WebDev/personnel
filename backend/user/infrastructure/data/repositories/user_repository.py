@@ -42,6 +42,16 @@ class UserRepository(IUserRepository):
         result = await self._session.execute(stmt)
         return [self._to_entity(row) for row in result.all()]
 
+    async def get_by_id(self, user_id: str) -> UserWithLocation:
+        stmt = self._select_with_location().where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        row = result.one_or_none()
+
+        if row is None:
+            raise UserNotFoundError()
+
+        return self._to_entity(row)
+
     async def create(
         self,
         user_id: str,
@@ -121,6 +131,13 @@ class UserRepository(IUserRepository):
         stmt = update(UserModel).where(UserModel.id == user_id).values(photo_path=photo_path)
         await self._session.execute(stmt)
         await self._session.flush()
+
+    async def set_blocked_status(self, user_id: str, is_blocked: bool) -> UserWithLocation:
+        stmt = update(UserModel).where(UserModel.id == user_id).values(is_blocked=is_blocked)
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+        return await self.get_by_id(user_id)
 
     @staticmethod
     def _select_with_location():

@@ -20,6 +20,10 @@ class IUserRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_by_id(self, user_id: str) -> UserWithLocation:
+        pass
+
+    @abstractmethod
     async def create(
         self,
         user_id: str,
@@ -46,4 +50,8 @@ class IUserRepository(ABC):
 
     @abstractmethod
     async def set_photo_path(self, user_id: str, photo_path: str) -> None:
+        pass
+
+    @abstractmethod
+    async def set_blocked_status(self, user_id: str, is_blocked: bool) -> UserWithLocation:
         pass
