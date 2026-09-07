@@ -174,3 +174,17 @@ async def update_user(
     )
 
     return {"success": True}
+
+from fastapi import Response
+from app.security.rate_limit_dependency import rate_limit
+from di.user_providers import get_profile_photo_uc
+
+
+@router.get("/photo/{file_id}")
+async def get_profile_photo(
+    file_id: str,
+    _rate_limit=Depends(rate_limit(scope="profile_photo", max_requests=30, window_seconds=60)),
+):
+    get_photo_uc = get_profile_photo_uc()
+    data = await get_photo_uc.execute(file_id)
+    return Response(content=data, media_type="image/png")

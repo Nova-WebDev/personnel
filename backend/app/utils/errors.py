@@ -9,3 +9,9 @@ class InvalidPhotoFileError(DomainError):
 
     def __init__(self, message: str = "Invalid or unsupported photo file"):
         super().__init__(message)
+
+class TooManyRequestsError(DomainError):
+    status_code = 429
+
+    def __init__(self, message: str = "Too many requests"):
+        super().__init__(message)

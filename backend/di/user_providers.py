@@ -16,6 +16,7 @@ from user.core.use_cases.get_branches_with_units import GetBranchesWithUnits
 from user.core.use_cases.get_users_with_location import GetUsersWithLocation
 from user.core.use_cases.create_user import CreateUser
 from user.core.use_cases.update_user import UpdateUser
+from user.core.use_cases.get_profile_photo import GetProfilePhoto
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -96,5 +97,12 @@ def get_update_user_uc(session: AsyncSession) -> UpdateUser:
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
         format_validator=ImageFormatValidator(),
+        image_processor=LocalImageProcessor(),
+    )
+
+
+
+def get_profile_photo_uc() -> GetProfilePhoto:
+    return GetProfilePhoto(
         image_processor=LocalImageProcessor(),
     )
