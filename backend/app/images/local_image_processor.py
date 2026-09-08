@@ -64,3 +64,12 @@ class LocalImageProcessor(IImageProcessor):
         path = os.path.join(self._folder_path(folder), file_id)
         if os.path.exists(path):
             os.remove(path)
+
+    async def exists(self, folder: str, file_id: str) -> bool:
+        path = os.path.join(self._folder_path(folder), file_id)
+        return os.path.exists(path)
+
+    async def save_raw(self, folder: str, file_id: str, file_bytes: bytes) -> None:
+        path = os.path.join(self._folder_path(folder), file_id)
+        with open(path, "wb") as f:
+            f.write(file_bytes)

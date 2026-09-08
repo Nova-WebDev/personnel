@@ -18,11 +18,13 @@ from user.core.use_cases.create_user import CreateUser
 from user.core.use_cases.update_user import UpdateUser
 from user.core.use_cases.get_profile_photo import GetProfilePhoto
 from user.core.use_cases.set_user_blocked_status import SetUserBlockedStatus
+from user.core.use_cases.get_user_qr_code import GetUserQrCode
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 from user.infrastructure.data.repositories.user_repository import UserRepository
 from user.infrastructure.data.repositories.unit_repository import UnitRepository
+from user.infrastructure.qr.qr_code_generator import QRCodeGenerator
 
 
 
@@ -113,4 +115,13 @@ def get_set_user_blocked_status_uc(session: AsyncSession) -> SetUserBlockedStatu
         user_repository=UserRepository(session),
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
+    )
+
+
+
+def get_user_qr_code_uc(session: AsyncSession) -> GetUserQrCode:
+    return GetUserQrCode(
+        user_repository=UserRepository(session),
+        image_processor=LocalImageProcessor(),
+        qr_code_generator=QRCodeGenerator(),
     )

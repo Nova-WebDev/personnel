@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, UploadFile, File
+from fastapi import APIRouter, Depends, Form, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.user.create_branch_request import CreateBranchRequest
@@ -9,9 +9,10 @@ from schemas.user.branch_with_units_response import BranchWithUnitsResponse, Uni
 from schemas.user.user_with_location_response import UserWithLocationResponse
 from schemas.user.set_blocked_status_request import SetBlockedStatusRequest
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
+from app.security.rate_limit_dependency import rate_limit
 
 router = APIRouter()
 
@@ -176,10 +177,6 @@ async def update_user(
 
     return {"success": True}
 
-from fastapi import Response
-from app.security.rate_limit_dependency import rate_limit
-from di.user_providers import get_profile_photo_uc
-
 
 @router.get("/photo/{file_id}")
 async def get_profile_photo(
@@ -201,3 +198,16 @@ async def set_user_blocked_status(
     await set_blocked_status_uc.execute(user_id, payload.is_blocked, _user.permissions)
 
     return {"success": True}
+
+
+
+@router.get("/user/{user_id}/qrcode")
+async def get_user_qr_code(
+    user_id: str,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    get_qr_uc = get_user_qr_code_uc(session)
+    qr_bytes = await get_qr_uc.execute(user_id, _user.permissions)
+
+    return Response(content=qr_bytes, media_type="image/png")

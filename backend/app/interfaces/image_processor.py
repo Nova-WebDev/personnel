@@ -20,3 +20,11 @@ class IImageProcessor(ABC):
     @abstractmethod
     async def delete(self, folder: str, file_id: str) -> None:
         pass
+
+    @abstractmethod
+    async def exists(self, folder: str, file_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def save_raw(self, folder: str, file_id: str, file_bytes: bytes) -> None:
+        pass
