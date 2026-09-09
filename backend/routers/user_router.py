@@ -196,7 +196,7 @@ async def set_user_blocked_status(
     session: AsyncSession = Depends(get_session),
     _user=Depends(get_current_user),
 ):
-    set_blocked_status_uc = get_set_user_blocked_status_uc(session)
+    set_blocked_status_uc = await get_set_user_blocked_status_uc(session)
     await set_blocked_status_uc.execute(user_id, payload.is_blocked, _user.permissions)
 
     return {"success": True}

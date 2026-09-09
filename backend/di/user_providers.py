@@ -6,6 +6,8 @@ from app.events.redis_event_publisher import RedisEventPublisher
 from app.images.image_format_validator import ImageFormatValidator
 from app.images.local_image_processor import LocalImageProcessor
 
+from auth.infrastructure.store.auth_store import AuthStore
+
 from user.core.use_cases.create_branch import CreateBranch
 from user.core.use_cases.update_branch import UpdateBranch
 from user.core.use_cases.create_unit import CreateUnit
@@ -112,11 +114,13 @@ def get_profile_photo_uc() -> GetProfilePhoto:
         image_processor=LocalImageProcessor(),
     )
 
-def get_set_user_blocked_status_uc(session: AsyncSession) -> SetUserBlockedStatus:
+async def get_set_user_blocked_status_uc(session: AsyncSession) -> SetUserBlockedStatus:
+    redis = await redis_client.get_client()
     return SetUserBlockedStatus(
         user_repository=UserRepository(session),
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
+        auth_store=AuthStore(redis),
     )
 
 

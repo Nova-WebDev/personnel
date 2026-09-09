@@ -1,6 +1,7 @@
 from user.core.interfaces.user_repository import IUserRepository
 from user.core.interfaces.permission_repository import IPermissionRepository
 from app.interfaces.event_publisher import IEventPublisher
+from auth.core.interfaces.auth_store import IAuthStore
 from user.core.errors.user_errors import PermissionDeniedError
 from user.core.entities.permission_level import PermissionLevel
 
@@ -11,16 +12,21 @@ class SetUserBlockedStatus:
         user_repository: IUserRepository,
         permission_repository: IPermissionRepository,
         event_publisher: IEventPublisher,
+        auth_store: IAuthStore,
     ):
         self.user_repository = user_repository
         self.permission_repository = permission_repository
         self.event_publisher = event_publisher
+        self.auth_store = auth_store
 
     async def execute(self, user_id: str, is_blocked: bool, permissions: list[dict]) -> None:
         current = await self.user_repository.get_by_id(user_id)
         self._authorize(current.unit_id, permissions)
 
         user = await self.user_repository.set_blocked_status(user_id, is_blocked)
+
+        if is_blocked:
+            await self.auth_store.delete(user_id)
 
         targets = []
         if user.unit_id is not None:
