@@ -19,6 +19,7 @@ from user.core.use_cases.update_user import UpdateUser
 from user.core.use_cases.get_profile_photo import GetProfilePhoto
 from user.core.use_cases.set_user_blocked_status import SetUserBlockedStatus
 from user.core.use_cases.get_user_qr_code import GetUserQrCode
+from user.core.use_cases.get_my_profile import GetMyProfile
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -124,4 +125,10 @@ def get_user_qr_code_uc(session: AsyncSession) -> GetUserQrCode:
         user_repository=UserRepository(session),
         image_processor=LocalImageProcessor(),
         qr_code_generator=QRCodeGenerator(),
+    )
+
+def get_my_profile_uc(session: AsyncSession) -> GetMyProfile:
+    return GetMyProfile(
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
     )

@@ -8,8 +8,9 @@ from schemas.user.update_unit_request import UpdateUnitRequest
 from schemas.user.branch_with_units_response import BranchWithUnitsResponse, UnitResponse
 from schemas.user.user_with_location_response import UserWithLocationResponse
 from schemas.user.set_blocked_status_request import SetBlockedStatusRequest
+from schemas.user.user_profile_response import UserProfileResponse, ScopeInfoResponse
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc, get_my_profile_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 from app.security.rate_limit_dependency import rate_limit
@@ -211,3 +212,37 @@ async def get_user_qr_code(
     qr_bytes = await get_qr_uc.execute(user_id, _user.permissions)
 
     return Response(content=qr_bytes, media_type="image/png")
+
+@router.get("/me", response_model=UserProfileResponse)
+async def get_my_profile(
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    get_profile_uc = get_my_profile_uc(session)
+    profile = await get_profile_uc.execute(_user.id, _user.permissions)
+
+    return UserProfileResponse(
+        id=profile.id,
+        phone=profile.phone,
+        first_name=profile.first_name,
+        last_name=profile.last_name,
+        personnel_code=profile.personnel_code,
+        rfid_card_id=profile.rfid_card_id,
+        photo_path=profile.photo_path,
+        is_blocked=profile.is_blocked,
+        created_at=profile.created_at,
+        unit_id=profile.unit_id,
+        unit_name=profile.unit_name,
+        branch_id=profile.branch_id,
+        branch_name=profile.branch_name,
+        scopes=[
+            ScopeInfoResponse(
+                level=s.level,
+                unit_id=s.unit_id,
+                unit_name=s.unit_name,
+                branch_id=s.branch_id,
+                branch_name=s.branch_name,
+            )
+            for s in profile.scopes
+        ],
+    )
