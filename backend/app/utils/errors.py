@@ -15,3 +15,10 @@ class TooManyRequestsError(DomainError):
 
     def __init__(self, message: str = "Too many requests"):
         super().__init__(message)
+
+
+class InvalidApiKeyError(DomainError):
+    status_code = 401
+
+    def __init__(self, message: str = "Invalid API key"):
+        super().__init__(message)
