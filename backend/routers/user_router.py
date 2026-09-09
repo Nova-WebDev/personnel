@@ -9,8 +9,9 @@ from schemas.user.branch_with_units_response import BranchWithUnitsResponse, Uni
 from schemas.user.user_with_location_response import UserWithLocationResponse
 from schemas.user.set_blocked_status_request import SetBlockedStatusRequest
 from schemas.user.user_profile_response import UserProfileResponse, ScopeInfoResponse
+from schemas.user.permission_level_response import PermissionLevelResponse
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc, get_my_profile_uc, get_public_user_profile_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc, get_my_profile_uc, get_public_user_profile_uc, get_permission_levels_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 from app.security.rate_limit_dependency import rate_limit
@@ -272,3 +273,13 @@ async def get_public_user_profile_by_api_key(
     user = await get_profile_uc.execute(user_id)
 
     return UserWithLocationResponse(**vars(user))
+
+
+@router.get("/permission-levels", response_model=list[PermissionLevelResponse])
+async def get_permission_levels(
+    _user=Depends(get_current_user),
+):
+    get_levels_uc = get_permission_levels_uc()
+    levels = await get_levels_uc.execute(_user.permissions)
+
+    return [PermissionLevelResponse(level=lv.level, requires_scope=lv.requires_scope) for lv in levels]

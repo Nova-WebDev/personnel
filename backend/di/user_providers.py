@@ -23,6 +23,7 @@ from user.core.use_cases.set_user_blocked_status import SetUserBlockedStatus
 from user.core.use_cases.get_user_qr_code import GetUserQrCode
 from user.core.use_cases.get_my_profile import GetMyProfile
 from user.core.use_cases.get_public_user_profile import GetPublicUserProfile
+from user.core.use_cases.get_permission_levels import GetPermissionLevels
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -142,3 +143,6 @@ def get_public_user_profile_uc(session: AsyncSession) -> GetPublicUserProfile:
     return GetPublicUserProfile(
         user_repository=UserRepository(session),
     )
+
+def get_permission_levels_uc() -> GetPermissionLevels:
+    return GetPermissionLevels()
