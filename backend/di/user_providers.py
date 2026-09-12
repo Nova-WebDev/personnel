@@ -24,6 +24,9 @@ from user.core.use_cases.get_user_qr_code import GetUserQrCode
 from user.core.use_cases.get_my_profile import GetMyProfile
 from user.core.use_cases.get_public_user_profile import GetPublicUserProfile
 from user.core.use_cases.get_permission_levels import GetPermissionLevels
+from user.core.use_cases.get_all_permissions import GetAllPermissions
+from user.core.use_cases.delete_user_permissions import DeleteUserPermissions
+from user.core.use_cases.set_user_permissions import SetUserPermissions
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -146,3 +149,24 @@ def get_public_user_profile_uc(session: AsyncSession) -> GetPublicUserProfile:
 
 def get_permission_levels_uc() -> GetPermissionLevels:
     return GetPermissionLevels()
+
+def get_all_permissions_uc(session: AsyncSession) -> GetAllPermissions:
+    return GetAllPermissions(
+        permission_repository=PermissionRepository(session),
+    )
+
+async def get_delete_user_permissions_uc(session: AsyncSession) -> DeleteUserPermissions:
+    redis = await redis_client.get_client()
+    return DeleteUserPermissions(
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+        auth_store=AuthStore(redis),
+    )
+
+async def get_set_user_permissions_uc(session: AsyncSession) -> SetUserPermissions:
+    redis = await redis_client.get_client()
+    return SetUserPermissions(
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+        auth_store=AuthStore(redis),
+    )

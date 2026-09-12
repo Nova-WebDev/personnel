@@ -55,3 +55,10 @@ class PhotoNotFoundError(DomainError):
 
     def __init__(self, message: str = "Photo not found"):
         super().__init__(message)
+
+
+class InvalidPermissionScopeError(DomainError):
+    status_code = 422
+
+    def __init__(self, message: str = "Scope requirement violated for one or more permission levels"):
+        super().__init__(message)

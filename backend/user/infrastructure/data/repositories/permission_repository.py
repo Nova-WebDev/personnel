@@ -1,12 +1,18 @@
+import uuid
+
+from sqlalchemy import delete as sql_delete
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from user.core.entities.permission_level import PermissionLevel
+from user.core.entities.permission_with_user import PermissionWithUser
+from user.core.entities.scope_info import ScopeInfo
 from user.core.interfaces.permission_repository import IPermissionRepository
+from user.infrastructure.data.models.branch import BranchModel
 from user.infrastructure.data.models.permission import PermissionModel
 from user.infrastructure.data.models.unit import UnitModel
-from user.core.entities.permission_level import PermissionLevel
-from user.core.entities.scope_info import ScopeInfo
-from user.infrastructure.data.models.branch import BranchModel
+from user.infrastructure.data.models.user import UserModel
+
 
 class PermissionRepository(IPermissionRepository):
     def __init__(self, session: AsyncSession):
@@ -36,7 +42,6 @@ class PermissionRepository(IPermissionRepository):
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
-
 
     async def get_scopes_with_location(self, permissions: list[dict]) -> list[ScopeInfo]:
         unit_ids = list({p["scope"] for p in permissions if p["scope"] is not None})
@@ -76,3 +81,57 @@ class PermissionRepository(IPermissionRepository):
             ))
 
         return scopes
+
+    async def get_all_with_user_and_location(self) -> list[PermissionWithUser]:
+        stmt = (
+            select(
+                PermissionModel.id,
+                PermissionModel.user_id,
+                UserModel.first_name,
+                UserModel.last_name,
+                PermissionModel.level,
+                PermissionModel.group_id,
+                UnitModel.name,
+                BranchModel.id,
+                BranchModel.name,
+            )
+            .join(UserModel, PermissionModel.user_id == UserModel.id)
+            .outerjoin(UnitModel, PermissionModel.group_id == UnitModel.id)
+            .outerjoin(BranchModel, UnitModel.branch_id == BranchModel.id)
+        )
+        result = await self._session.execute(stmt)
+
+        return [
+            PermissionWithUser(
+                permission_id=row[0],
+                user_id=row[1],
+                first_name=row[2],
+                last_name=row[3],
+                level=row[4].value,
+                unit_id=row[5],
+                unit_name=row[6],
+                branch_id=row[7],
+                branch_name=row[8],
+            )
+            for row in result.all()
+        ]
+
+    async def delete_all_by_user_id(self, user_id: str) -> None:
+        stmt = sql_delete(PermissionModel).where(PermissionModel.user_id == user_id)
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+    async def replace_all_for_user(self, user_id: str, permissions: list[dict]) -> None:
+        delete_stmt = sql_delete(PermissionModel).where(PermissionModel.user_id == user_id)
+        await self._session.execute(delete_stmt)
+
+        for p in permissions:
+            model = PermissionModel(
+                id=str(uuid.uuid4()),
+                user_id=user_id,
+                level=PermissionLevel(p["level"]),
+                group_id=p.get("scope"),
+            )
+            self._session.add(model)
+
+        await self._session.flush()
