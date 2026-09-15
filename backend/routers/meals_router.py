@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.meals.set_time_policies_request import SetTimePoliciesRequest
 from schemas.meals.time_policy_response import TimePolicyResponse
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -37,3 +37,26 @@ async def get_meal_plan_time_policies(
         TimePolicyResponse(id=p.id, target_weekday=p.target_weekday.value, cutoff_hours_before=p.cutoff_hours_before)
         for p in policies
     ]
+
+
+
+
+@router.post("/meal")
+async def create_meal(
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+    title: str = Form(...),
+    description: str | None = Form(None),
+    photo: UploadFile | None = File(None),
+):
+    create_meal_uc = get_create_meal_uc(session)
+    file_bytes = await photo.read() if photo is not None else None
+
+    await create_meal_uc.execute(
+        title=title,
+        permissions=_user.permissions,
+        description=description,
+        file_bytes=file_bytes,
+    )
+
+    return {"success": True}
