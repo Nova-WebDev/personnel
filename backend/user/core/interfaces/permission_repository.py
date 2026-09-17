@@ -30,3 +30,7 @@ class IPermissionRepository(ABC):
     @abstractmethod
     async def replace_all_for_user(self, user_id: str, permissions: list[dict]) -> None:
         pass
+
+    @abstractmethod
+    async def get_admin_and_kitchen_user_ids(self) -> list[str]:
+        pass

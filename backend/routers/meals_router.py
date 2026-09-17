@@ -40,7 +40,6 @@ async def get_meal_plan_time_policies(
 
 
 
-
 @router.post("/meal")
 async def create_meal(
     session: AsyncSession = Depends(get_session),
@@ -49,7 +48,7 @@ async def create_meal(
     description: str | None = Form(None),
     photo: UploadFile | None = File(None),
 ):
-    create_meal_uc = get_create_meal_uc(session)
+    create_meal_uc = await get_create_meal_uc(session)
     file_bytes = await photo.read() if photo is not None else None
 
     await create_meal_uc.execute(

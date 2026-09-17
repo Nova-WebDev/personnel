@@ -135,3 +135,10 @@ class PermissionRepository(IPermissionRepository):
             self._session.add(model)
 
         await self._session.flush()
+
+    async def get_admin_and_kitchen_user_ids(self) -> list[str]:
+        stmt = select(PermissionModel.user_id).where(
+            PermissionModel.level.in_([PermissionLevel.ADMIN, PermissionLevel.KITCHEN])
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
