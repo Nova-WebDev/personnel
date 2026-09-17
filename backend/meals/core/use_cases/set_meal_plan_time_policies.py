@@ -1,13 +1,11 @@
 import json
 
 from meals.core.interfaces.meal_plan_time_policy_repository import IMealPlanTimePolicyRepository
+from meals.core.interfaces.time_policy_cache import ITimePolicyCache
 from meals.core.entities.week_day import WeekDay
 from meals.core.errors.meals_errors import PermissionDeniedError, InvalidTimePolicyError
 from app.interfaces.event_publisher import IEventPublisher
-from meals.core.interfaces.cache_store import ICacheStore
 from user.core.entities.permission_level import PermissionLevel
-
-CACHE_KEY = "meal_plan_time_policies"
 
 
 class SetMealPlanTimePolicies:
@@ -15,11 +13,11 @@ class SetMealPlanTimePolicies:
         self,
         policy_repository: IMealPlanTimePolicyRepository,
         event_publisher: IEventPublisher,
-        cache_store: ICacheStore,
+        time_policy_cache: ITimePolicyCache,
     ):
         self.policy_repository = policy_repository
         self.event_publisher = event_publisher
-        self.cache_store = cache_store
+        self.time_policy_cache = time_policy_cache
 
     async def execute(self, policies: list[dict], permissions: list[dict]) -> None:
         self._authorize(permissions)
@@ -32,8 +30,8 @@ class SetMealPlanTimePolicies:
             for p in result
         ]
 
-        await self.cache_store.delete(CACHE_KEY)
-        await self.cache_store.set(CACHE_KEY, json.dumps(payload))
+        await self.time_policy_cache.clear()
+        await self.time_policy_cache.set_all(json.dumps(payload))
 
         await self.event_publisher.publish(
             event="meal_plan_time_policy.updated",

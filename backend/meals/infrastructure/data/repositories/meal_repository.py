@@ -1,7 +1,9 @@
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from meals.core.interfaces.meal_repository import IMealRepository
 from meals.core.entities.meal import Meal
+from meals.core.errors.meals_errors import MealNotFoundError
 from meals.infrastructure.data.models.meal import MealModel
 
 
@@ -34,3 +36,47 @@ class MealRepository(IMealRepository):
             photo_path=model.photo_path,
             is_active=model.is_active,
         )
+
+    async def get_by_id(self, meal_id: str) -> Meal:
+        model = await self._session.get(MealModel, meal_id)
+
+        if model is None:
+            raise MealNotFoundError()
+
+        return Meal(
+            id=model.id,
+            title=model.title,
+            description=model.description,
+            photo_path=model.photo_path,
+            is_active=model.is_active,
+        )
+
+    async def update(
+        self,
+        meal_id: str,
+        title: str,
+        description: str | None,
+    ) -> Meal:
+        model = await self._session.get(MealModel, meal_id)
+
+        if model is None:
+            raise MealNotFoundError()
+
+        model.title = title
+        model.description = description
+
+        await self._session.flush()
+        await self._session.refresh(model)
+
+        return Meal(
+            id=model.id,
+            title=model.title,
+            description=model.description,
+            photo_path=model.photo_path,
+            is_active=model.is_active,
+        )
+
+    async def set_photo_path(self, meal_id: str, photo_path: str) -> None:
+        stmt = update(MealModel).where(MealModel.id == meal_id).values(photo_path=photo_path)
+        await self._session.execute(stmt)
+        await self._session.flush()

@@ -4,11 +4,18 @@ from meals.core.entities.meal import Meal
 
 class IMealRepository(ABC):
     @abstractmethod
-    async def create(
-        self,
-        meal_id: str,
-        title: str,
-        description: str | None,
-        photo_path: str | None,
+    async def get_by_id(self, meal_id: str) -> Meal:
+        pass
+
+    @abstractmethod
+    async def update(
+            self,
+            meal_id: str,
+            title: str,
+            description: str | None,
     ) -> Meal:
+        pass
+
+    @abstractmethod
+    async def set_photo_path(self, meal_id: str, photo_path: str) -> None:
         pass

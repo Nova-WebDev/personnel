@@ -1,24 +1,22 @@
 import json
 
 from meals.core.interfaces.meal_plan_time_policy_repository import IMealPlanTimePolicyRepository
-from meals.core.interfaces.cache_store import ICacheStore
+from meals.core.interfaces.time_policy_cache import ITimePolicyCache
 from meals.core.entities.meal_plan_time_policy import MealPlanTimePolicy
 from meals.core.entities.week_day import WeekDay
-
-CACHE_KEY = "meal_plan_time_policies"
 
 
 class GetMealPlanTimePolicies:
     def __init__(
         self,
         policy_repository: IMealPlanTimePolicyRepository,
-        cache_store: ICacheStore,
+        time_policy_cache: ITimePolicyCache,
     ):
         self.policy_repository = policy_repository
-        self.cache_store = cache_store
+        self.time_policy_cache = time_policy_cache
 
     async def execute(self) -> list[MealPlanTimePolicy]:
-        cached = await self.cache_store.get(CACHE_KEY)
+        cached = await self.time_policy_cache.get_all()
 
         if cached is not None:
             data = json.loads(cached)
@@ -37,6 +35,6 @@ class GetMealPlanTimePolicies:
             {"id": p.id, "target_weekday": p.target_weekday.value, "cutoff_hours_before": p.cutoff_hours_before}
             for p in policies
         ]
-        await self.cache_store.set(CACHE_KEY, json.dumps(payload))
+        await self.time_policy_cache.set_all(json.dumps(payload))
 
         return policies

@@ -13,3 +13,10 @@ class InvalidTimePolicyError(DomainError):
 
     def __init__(self, message: str = "Time policy must include all seven weekdays exactly once"):
         super().__init__(message)
+
+
+class MealNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Meal not found"):
+        super().__init__(message)
