@@ -3,8 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.meals.set_time_policies_request import SetTimePoliciesRequest
 from schemas.meals.time_policy_response import TimePolicyResponse
+from schemas.meals.set_active_status_request import SetActiveStatusRequest
+from schemas.meals.meal_response import MealResponse
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -84,3 +86,30 @@ async def update_meal(
     )
 
     return {"success": True}
+
+
+
+
+@router.patch("/meal/{meal_id}/active-status")
+async def set_meal_active_status(
+    meal_id: str,
+    payload: SetActiveStatusRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    set_status_uc = await get_set_meal_active_status_uc(session)
+    await set_status_uc.execute(meal_id, payload.is_active, _user.permissions)
+
+    return {"success": True}
+
+
+
+@router.get("/meal", response_model=list[MealResponse])
+async def get_meals(
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    get_meals_uc_instance = await get_meals_uc(session)
+    meals = await get_meals_uc_instance.execute(_user.permissions)
+
+    return [MealResponse(**vars(m)) for m in meals]

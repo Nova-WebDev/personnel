@@ -1,4 +1,4 @@
-from sqlalchemy import update
+from sqlalchemy import update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from meals.core.interfaces.meal_repository import IMealRepository
@@ -80,3 +80,26 @@ class MealRepository(IMealRepository):
         stmt = update(MealModel).where(MealModel.id == meal_id).values(photo_path=photo_path)
         await self._session.execute(stmt)
         await self._session.flush()
+
+    async def set_active_status(self, meal_id: str, is_active: bool) -> Meal:
+        stmt = update(MealModel).where(MealModel.id == meal_id).values(is_active=is_active)
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+        return await self.get_by_id(meal_id)
+
+    async def get_all(self) -> list[Meal]:
+        stmt = select(MealModel)
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+
+        return [
+            Meal(
+                id=m.id,
+                title=m.title,
+                description=m.description,
+                photo_path=m.photo_path,
+                is_active=m.is_active,
+            )
+            for m in models
+        ]

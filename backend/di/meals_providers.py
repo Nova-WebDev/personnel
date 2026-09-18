@@ -15,6 +15,8 @@ from meals.core.use_cases.set_meal_plan_time_policies import SetMealPlanTimePoli
 from meals.core.use_cases.get_meal_plan_time_policies import GetMealPlanTimePolicies
 from meals.core.use_cases.create_meal import CreateMeal
 from meals.core.use_cases.update_meal import UpdateMeal
+from meals.core.use_cases.set_meal_active_status import SetMealActiveStatus
+from meals.core.use_cases.get_meals import GetMeals
 
 
 
@@ -55,4 +57,20 @@ async def get_update_meal_uc(session: AsyncSession) -> UpdateMeal:
         meal_cache=RedisMealCache(redis),
         format_validator=ImageFormatValidator(),
         image_processor=LocalImageProcessor(),
+    )
+
+async def get_set_meal_active_status_uc(session: AsyncSession) -> SetMealActiveStatus:
+    redis = await redis_client.get_client()
+    return SetMealActiveStatus(
+        meal_repository=MealRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+        meal_cache=RedisMealCache(redis),
+    )
+
+
+async def get_meals_uc(session: AsyncSession) -> GetMeals:
+    redis = await redis_client.get_client()
+    return GetMeals(
+        meal_repository=MealRepository(session),
+        meal_cache=RedisMealCache(redis),
     )
