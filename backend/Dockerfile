@@ -1,7 +1,9 @@
-FROM dictionary-base
+FROM personnel-python-base:latest
 
 WORKDIR /app
 
 COPY . .
-RUN uv sync
-CMD ["sh", "-c", "alembic upgrade head && gunicorn main:app -k uvicorn.workers.UvicornWorker --workers 1 --bind 0.0.0.0:8000"]
+
+EXPOSE 8000
+
+CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000"]
