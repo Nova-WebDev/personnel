@@ -30,7 +30,6 @@ async def domain_error_handler(_request: Request, exc: DomainError) -> JSONRespo
     return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)})
 
 
-
 app.include_router(app_router, prefix="/app", tags=["app"])
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(user_router, prefix="/user", tags=["user"])
