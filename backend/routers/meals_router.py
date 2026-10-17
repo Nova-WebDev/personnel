@@ -5,8 +5,9 @@ from schemas.meals.set_time_policies_request import SetTimePoliciesRequest
 from schemas.meals.time_policy_response import TimePolicyResponse
 from schemas.meals.set_active_status_request import SetActiveStatusRequest
 from schemas.meals.meal_response import MealResponse
+from schemas.meals.create_meal_plan_request import CreateMealPlanRequest
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -113,3 +114,16 @@ async def get_meals(
     meals = await get_meals_uc_instance.execute(_user.permissions)
 
     return [MealResponse(**vars(m)) for m in meals]
+
+
+
+@router.post("/meal-plan")
+async def create_meal_plan(
+    payload: CreateMealPlanRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    create_meal_plan_uc = await get_create_meal_plan_uc(session)
+    await create_meal_plan_uc.execute(payload.plan_date, payload.meal_id, _user.permissions)
+
+    return {"success": True}

@@ -9,6 +9,7 @@ from meals.infrastructure.cache.redis_meal_cache import RedisMealCache
 from meals.infrastructure.cache.redis_time_policy_cache import RedisTimePolicyCache
 from meals.infrastructure.data.repositories.meal_plan_time_policy_repository import MealPlanTimePolicyRepository
 from meals.infrastructure.data.repositories.meal_repository import MealRepository
+from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 
 from meals.core.use_cases.set_meal_plan_time_policies import SetMealPlanTimePolicies
@@ -17,6 +18,7 @@ from meals.core.use_cases.create_meal import CreateMeal
 from meals.core.use_cases.update_meal import UpdateMeal
 from meals.core.use_cases.set_meal_active_status import SetMealActiveStatus
 from meals.core.use_cases.get_meals import GetMeals
+from meals.core.use_cases.create_meal_plan import CreateMealPlan
 
 
 
@@ -73,4 +75,13 @@ async def get_meals_uc(session: AsyncSession) -> GetMeals:
     return GetMeals(
         meal_repository=MealRepository(session),
         meal_cache=RedisMealCache(redis),
+    )
+
+
+
+async def get_create_meal_plan_uc(session: AsyncSession) -> CreateMealPlan:
+    return CreateMealPlan(
+        meal_plan_repository=MealPlanRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
     )
