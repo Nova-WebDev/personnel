@@ -42,12 +42,6 @@ class MealPlanDeadlinePassedError(DomainError):
         super().__init__(message)
 
 
-class TimePolicyNotFoundError(DomainError):
-    status_code = 409
-
-    def __init__(self, message: str = "No time policy is defined for this weekday"):
-        super().__init__(message)
-
 class MealPlanNotFoundError(DomainError):
     status_code = 404
 

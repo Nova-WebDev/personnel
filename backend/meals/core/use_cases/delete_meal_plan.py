@@ -4,7 +4,6 @@ from app.interfaces.event_publisher import IEventPublisher
 from meals.core.errors.meals_errors import (
     MealPlanDeadlinePassedError,
     PermissionDeniedError,
-    TimePolicyNotFoundError,
 )
 from meals.core.interfaces.meal_plan_repository import IMealPlanRepository
 from meals.core.use_cases.get_meal_plan_time_policies import GetMealPlanTimePolicies
@@ -43,10 +42,8 @@ class DeleteMealPlan:
         weekday = weekday_of(plan_date)
         policy = next((p for p in policies if p.target_weekday == weekday), None)
 
-        if policy is None:
-            raise TimePolicyNotFoundError()
-
-        deadline = resolve_deadline_utc(plan_date, policy.cutoff_hours_before)
+        cutoff_hours_before = policy.cutoff_hours_before if policy is not None else 0
+        deadline = resolve_deadline_utc(plan_date, cutoff_hours_before)
 
         if datetime.now(timezone.utc) >= deadline:
             raise MealPlanDeadlinePassedError()
