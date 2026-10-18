@@ -24,3 +24,11 @@ class IMealPlanRepository(ABC):
     @abstractmethod
     async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
         pass
+
+    @abstractmethod
+    async def get_by_dates(self, dates: list[date]) -> list[MealPlanWithMeal]:
+        pass
+
+    @abstractmethod
+    async def replace_days(self, plans_by_date: dict[date, str]) -> None:
+        pass

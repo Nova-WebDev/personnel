@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import Date, cast, literal, select, update, delete
+from sqlalchemy import Date, cast, delete, literal, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -102,6 +102,39 @@ class MealPlanRepository(IMealPlanRepository):
 
         return self._to_entity(row[0], row[1], row[2:])
 
+    async def delete(self, meal_plan_id: str) -> None:
+        stmt = delete(MealPlanModel).where(MealPlanModel.id == meal_plan_id).returning(MealPlanModel.id)
+        result = await self._session.execute(stmt)
+
+        if result.scalar_one_or_none() is None:
+            raise MealPlanNotFoundError()
+
+    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
+        stmt = self._select_with_meal().where(
+            MealPlanModel.plan_date.between(date_from, date_to),
+            MealModel.is_active.is_(True),
+        )
+        result = await self._session.execute(stmt)
+
+        return [self._to_entity(row[0], row[1], row[2:]) for row in result.all()]
+
+    async def get_by_dates(self, dates: list[date]) -> list[MealPlanWithMeal]:
+        stmt = self._select_with_meal().where(MealPlanModel.plan_date.in_(dates))
+        result = await self._session.execute(stmt)
+
+        return [self._to_entity(row[0], row[1], row[2:]) for row in result.all()]
+
+    async def replace_days(self, plans_by_date: dict[date, str]) -> None:
+        await self._session.execute(
+            delete(MealPlanModel).where(MealPlanModel.plan_date.in_(list(plans_by_date)))
+        )
+
+        self._session.add_all(
+            MealPlanModel(id=str(uuid.uuid4()), plan_date=d, meal_id=meal_id)
+            for d, meal_id in plans_by_date.items()
+        )
+        await self._session.flush()
+
     async def _raise_failure_reason(self, meal_id: str) -> None:
         meal = await self._session.get(MealModel, meal_id)
 
@@ -111,6 +144,22 @@ class MealPlanRepository(IMealPlanRepository):
             raise MealNotActiveError()
 
         raise MealPlanAlreadyExistsError()
+
+    @staticmethod
+    def _select_with_meal():
+        return (
+            select(
+                MealPlanModel.id,
+                MealPlanModel.plan_date,
+                MealModel.id,
+                MealModel.title,
+                MealModel.description,
+                MealModel.photo_path,
+                MealModel.is_active,
+            )
+            .join(MealModel, MealModel.id == MealPlanModel.meal_id)
+            .order_by(MealPlanModel.plan_date)
+        )
 
     @staticmethod
     def _to_entity(meal_plan_id: str, plan_date: date, meal_row) -> MealPlanWithMeal:
@@ -127,32 +176,3 @@ class MealPlanRepository(IMealPlanRepository):
                 is_active=is_active,
             ),
         )
-
-    async def delete(self, meal_plan_id: str) -> None:
-        stmt = delete(MealPlanModel).where(MealPlanModel.id == meal_plan_id).returning(MealPlanModel.id)
-        result = await self._session.execute(stmt)
-
-        if result.scalar_one_or_none() is None:
-            raise MealPlanNotFoundError()
-
-    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
-        stmt = (
-            select(
-                MealPlanModel.id,
-                MealPlanModel.plan_date,
-                MealModel.id,
-                MealModel.title,
-                MealModel.description,
-                MealModel.photo_path,
-                MealModel.is_active,
-            )
-            .join(MealModel, MealModel.id == MealPlanModel.meal_id)
-            .where(
-                MealPlanModel.plan_date.between(date_from, date_to),
-                MealModel.is_active.is_(True),
-            )
-            .order_by(MealPlanModel.plan_date)
-        )
-        result = await self._session.execute(stmt)
-
-        return [self._to_entity(row[0], row[1], row[2:]) for row in result.all()]

@@ -10,6 +10,8 @@ from meals.infrastructure.cache.redis_time_policy_cache import RedisTimePolicyCa
 from meals.infrastructure.data.repositories.meal_plan_time_policy_repository import MealPlanTimePolicyRepository
 from meals.infrastructure.data.repositories.meal_repository import MealRepository
 from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
+from meals.infrastructure.data.repositories.meal_plan_recurring_repository import MealPlanRecurringRepository
+
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 
 from meals.core.use_cases.set_meal_plan_time_policies import SetMealPlanTimePolicies
@@ -23,6 +25,8 @@ from meals.core.use_cases.update_meal_plan import UpdateMealPlan
 from meals.core.use_cases.delete_meal_plan import DeleteMealPlan
 from meals.core.use_cases.get_meal_plans import GetMealPlans
 from meals.core.use_cases.get_meal_photo import GetMealPhoto
+from meals.core.use_cases.set_meal_plan_recurring import SetMealPlanRecurring
+from meals.core.use_cases.get_meal_plan_recurring import GetMealPlanRecurring
 
 
 
@@ -112,3 +116,18 @@ def get_meal_plans_uc(session: AsyncSession) -> GetMealPlans:
 
 def get_meal_photo_uc() -> GetMealPhoto:
     return GetMealPhoto(image_processor=LocalImageProcessor())
+
+
+async def get_set_meal_plan_recurring_uc(session: AsyncSession) -> SetMealPlanRecurring:
+    return SetMealPlanRecurring(
+        recurring_repository=MealPlanRecurringRepository(session),
+        meal_plan_repository=MealPlanRepository(session),
+        meal_repository=MealRepository(session),
+        permission_repository=PermissionRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+
+def get_meal_plan_recurring_uc(session: AsyncSession) -> GetMealPlanRecurring:
+    return GetMealPlanRecurring(recurring_repository=MealPlanRecurringRepository(session))

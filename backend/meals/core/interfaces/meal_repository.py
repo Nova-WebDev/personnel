@@ -27,3 +27,7 @@ class IMealRepository(ABC):
     @abstractmethod
     async def get_all(self) -> list[Meal]:
         pass
+
+    @abstractmethod
+    async def get_active_statuses(self, meal_ids: list[str]) -> dict[str, bool]:
+        pass

@@ -60,3 +60,10 @@ class MealPhotoNotFoundError(DomainError):
 
     def __init__(self, message: str = "Meal photo not found"):
         super().__init__(message)
+
+
+class InvalidRecurringCycleError(DomainError):
+    status_code = 422
+
+    def __init__(self, message: str = "Recurring cycle is invalid"):
+        super().__init__(message)

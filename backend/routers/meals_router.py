@@ -9,8 +9,10 @@ from schemas.meals.create_meal_plan_request import CreateMealPlanRequest
 from schemas.meals.update_meal_plan_request import UpdateMealPlanRequest
 from schemas.meals.meal_plan_response import MealPlanResponse
 from schemas.meals.meal_response import MealResponse
+from schemas.meals.set_recurring_request import SetRecurringRequest
+from schemas.meals.recurring_response import RecurringItemResponse
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -191,3 +193,31 @@ async def get_meal_photo(
         media_type="image/png",
         headers={"Cache-Control": "no-cache"},
     )
+
+
+
+@router.put("/meal-plan-recurring")
+async def set_meal_plan_recurring(
+    payload: SetRecurringRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = await get_set_meal_plan_recurring_uc(session)
+    items = [{"target_date": i.target_date, "meal_id": i.meal_id} for i in payload.items]
+
+    await uc.execute(items, _user.permissions)
+
+    return {"success": True}
+
+
+
+
+@router.get("/meal-plan-recurring", response_model=list[RecurringItemResponse])
+async def get_meal_plan_recurring(
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = get_meal_plan_recurring_uc(session)
+    items = await uc.execute(_user.permissions)
+
+    return [RecurringItemResponse(target_date=i.target_date, meal_id=i.meal_id) for i in items]

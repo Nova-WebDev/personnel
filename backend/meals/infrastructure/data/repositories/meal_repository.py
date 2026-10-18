@@ -103,3 +103,12 @@ class MealRepository(IMealRepository):
             )
             for m in models
         ]
+
+    async def get_active_statuses(self, meal_ids: list[str]) -> dict[str, bool]:
+        if not meal_ids:
+            return {}
+
+        stmt = select(MealModel.id, MealModel.is_active).where(MealModel.id.in_(meal_ids))
+        result = await self._session.execute(stmt)
+
+        return {row[0]: row[1] for row in result.all()}
