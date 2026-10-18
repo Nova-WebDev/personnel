@@ -20,3 +20,7 @@ class IMealPlanRepository(ABC):
     @abstractmethod
     async def delete(self, meal_plan_id: str) -> None:
         pass
+
+    @abstractmethod
+    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
+        pass

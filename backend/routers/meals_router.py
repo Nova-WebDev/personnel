@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends, Form, UploadFile, File
+from datetime import date
+from fastapi import APIRouter, Depends, Form, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.meals.set_time_policies_request import SetTimePoliciesRequest
 from schemas.meals.time_policy_response import TimePolicyResponse
 from schemas.meals.set_active_status_request import SetActiveStatusRequest
-from schemas.meals.meal_response import MealResponse
 from schemas.meals.create_meal_plan_request import CreateMealPlanRequest
 from schemas.meals.update_meal_plan_request import UpdateMealPlanRequest
+from schemas.meals.meal_plan_response import MealPlanResponse
+from schemas.meals.meal_response import MealResponse
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -155,3 +157,37 @@ async def delete_meal_plan(
     await delete_meal_plan_uc.execute(meal_plan_id, _user.permissions)
 
     return {"success": True}
+
+
+@router.get("/meal-plan", response_model=list[MealPlanResponse])
+async def get_meal_plans(
+    date_from: date,
+    date_to: date,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    get_plans_uc = get_meal_plans_uc(session)
+    plans = await get_plans_uc.execute(date_from, date_to)
+
+    return [
+        MealPlanResponse(
+            id=p.id,
+            plan_date=p.plan_date,
+            meal=MealResponse(**vars(p.meal)),
+        )
+        for p in plans
+    ]
+
+
+@router.get("/meal/{meal_id}/photo")
+async def get_meal_photo(
+    meal_id: str,
+    _user=Depends(get_current_user),
+):
+    photo_bytes = await get_meal_photo_uc().execute(meal_id)
+
+    return Response(
+        content=photo_bytes,
+        media_type="image/png",
+        headers={"Cache-Control": "no-cache"},
+    )

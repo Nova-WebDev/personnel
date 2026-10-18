@@ -21,6 +21,8 @@ from meals.core.use_cases.get_meals import GetMeals
 from meals.core.use_cases.create_meal_plan import CreateMealPlan
 from meals.core.use_cases.update_meal_plan import UpdateMealPlan
 from meals.core.use_cases.delete_meal_plan import DeleteMealPlan
+from meals.core.use_cases.get_meal_plans import GetMealPlans
+from meals.core.use_cases.get_meal_photo import GetMealPhoto
 
 
 
@@ -104,3 +106,9 @@ async def get_delete_meal_plan_uc(session: AsyncSession) -> DeleteMealPlan:
         get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
+
+def get_meal_plans_uc(session: AsyncSession) -> GetMealPlans:
+    return GetMealPlans(meal_plan_repository=MealPlanRepository(session))
+
+def get_meal_photo_uc() -> GetMealPhoto:
+    return GetMealPhoto(image_processor=LocalImageProcessor())

@@ -134,3 +134,22 @@ class MealPlanRepository(IMealPlanRepository):
 
         if result.scalar_one_or_none() is None:
             raise MealPlanNotFoundError()
+
+    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
+        stmt = (
+            select(
+                MealPlanModel.id,
+                MealPlanModel.plan_date,
+                MealModel.id,
+                MealModel.title,
+                MealModel.description,
+                MealModel.photo_path,
+                MealModel.is_active,
+            )
+            .join(MealModel, MealModel.id == MealPlanModel.meal_id)
+            .where(MealPlanModel.plan_date.between(date_from, date_to))
+            .order_by(MealPlanModel.plan_date)
+        )
+        result = await self._session.execute(stmt)
+
+        return [self._to_entity(row[0], row[1], row[2:]) for row in result.all()]

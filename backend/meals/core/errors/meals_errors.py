@@ -53,3 +53,16 @@ class MealPlanNotFoundError(DomainError):
 
     def __init__(self, message: str = "Meal plan not found"):
         super().__init__(message)
+
+class InvalidDateRangeError(DomainError):
+    status_code = 422
+
+    def __init__(self, message: str = "Invalid date range"):
+        super().__init__(message)
+
+
+class MealPhotoNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Meal photo not found"):
+        super().__init__(message)
