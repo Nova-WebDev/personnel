@@ -1,3 +1,5 @@
+x-cron-key: &cron_key "3f9a7c1e5b2d84a06e7f1c93d5b8a2e4170c6f9d3a85b1e2c4d7f08a9b36e5c1"
+
 services:
   redis:
     image: redis:7-alpine
@@ -59,14 +61,29 @@ services:
       STORAGE_PATH: "/app/media"
       FRONTEND_DOMAIN: "https://personnel.hoomanholding.co/card"
       PERSONNEL_API_KEY: "649050f5d9f6b53e6f10c4ae2516e55f010c7dc878dc4ede4dd7b687d40393a0"
+      CRON_API_KEY: *cron_key
     restart: unless-stopped
     volumes:
       - personnel_media:/app/media
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/app/health')"]
       interval: 5s
       timeout: 3s
       retries: 5
+
+  cron:
+    build:
+      context: ./cron
+      dockerfile: Dockerfile
+    container_name: personnel_cron
+    networks:
+      - personnel_net
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      CRON_API_KEY: *cron_key
+    restart: unless-stopped
 
   websocket-gateway:
     build:

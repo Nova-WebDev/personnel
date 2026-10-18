@@ -1,18 +1,15 @@
 from datetime import date, datetime, timezone
 
 from app.interfaces.event_publisher import IEventPublisher
-from meals.core.entities.applied_day import AppliedDay
 from meals.core.errors.meals_errors import (
     InvalidRecurringCycleError,
     MealNotFoundError,
     PermissionDeniedError,
 )
 from meals.core.interfaces.meal_plan_recurring_repository import IMealPlanRecurringRepository
-from meals.core.interfaces.meal_plan_repository import IMealPlanRepository
 from meals.core.interfaces.meal_repository import IMealRepository
-from meals.core.use_cases.get_meal_plan_time_policies import GetMealPlanTimePolicies
+from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
 from meals.utility.recurring_cycle import advance, is_contiguous
-from meals.utility.reservation_deadline import is_deadline_passed
 from user.core.entities.permission_level import PermissionLevel
 from user.core.interfaces.permission_repository import IPermissionRepository
 
@@ -21,17 +18,15 @@ class SetMealPlanRecurring:
     def __init__(
         self,
         recurring_repository: IMealPlanRecurringRepository,
-        meal_plan_repository: IMealPlanRepository,
         meal_repository: IMealRepository,
         permission_repository: IPermissionRepository,
-        get_time_policies: GetMealPlanTimePolicies,
+        apply_recurring_cycle: ApplyRecurringCycle,
         event_publisher: IEventPublisher,
     ):
         self.recurring_repository = recurring_repository
-        self.meal_plan_repository = meal_plan_repository
         self.meal_repository = meal_repository
         self.permission_repository = permission_repository
-        self.get_time_policies = get_time_policies
+        self.apply_recurring_cycle = apply_recurring_cycle
         self.event_publisher = event_publisher
 
     async def execute(self, items: list[dict], permissions: list[dict]) -> None:
@@ -46,14 +41,14 @@ class SetMealPlanRecurring:
         self._validate_meals_exist(meal_ids, statuses)
 
         result = advance(items, now.date())
-        applied = await self._apply(result.visited, statuses, now)
+        applied = await self.apply_recurring_cycle.execute(result.visited, statuses, now)
         cycle = await self.recurring_repository.replace_all(result.rotated)
 
         if applied:
             await self.event_publisher.publish(
                 event="meal_plan.recurring_applied",
                 scope="meal_plan",
-                data={"days": [self._serialize_day(day) for day in applied]},
+                data={"days": [self.apply_recurring_cycle.serialize_day(day) for day in applied]},
                 targets=["*"],
             )
 
@@ -69,66 +64,6 @@ class SetMealPlanRecurring:
             },
             targets=admin_ids,
         )
-
-    async def _apply(
-        self,
-        visited: list[tuple[date, str | None]],
-        statuses: dict[str, bool],
-        now: datetime,
-    ) -> list[AppliedDay]:
-        if not visited:
-            return []
-
-        policies = await self.get_time_policies.execute()
-        existing = await self.meal_plan_repository.get_by_dates([d for d, _ in visited])
-
-        existing_by_date: dict[date, list] = {}
-        for plan in existing:
-            existing_by_date.setdefault(plan.plan_date, []).append(plan)
-
-        changes: dict[date, str] = {}
-        for day, meal_id in visited:
-            if is_deadline_passed(day, policies, now):
-                continue
-
-            if meal_id is None or not statuses.get(meal_id, False):
-                continue
-
-            if any(p.meal.id == meal_id for p in existing_by_date.get(day, [])):
-                continue
-
-            changes[day] = meal_id
-
-        if not changes:
-            return []
-
-        await self.meal_plan_repository.replace_days(changes)
-        refreshed = await self.meal_plan_repository.get_by_dates(list(changes))
-
-        by_date: dict[date, list] = {}
-        for plan in refreshed:
-            by_date.setdefault(plan.plan_date, []).append(plan)
-
-        return [AppliedDay(plan_date=d, plans=by_date.get(d, [])) for d in sorted(changes)]
-
-    @staticmethod
-    def _serialize_day(day: AppliedDay) -> dict:
-        return {
-            "plan_date": day.plan_date.isoformat(),
-            "plans": [
-                {
-                    "id": p.id,
-                    "meal": {
-                        "id": p.meal.id,
-                        "title": p.meal.title,
-                        "description": p.meal.description,
-                        "photo_path": p.meal.photo_path,
-                        "is_active": p.meal.is_active,
-                    },
-                }
-                for p in day.plans
-            ],
-        }
 
     @staticmethod
     def _validate_shape(items: list[dict], today: date) -> None:

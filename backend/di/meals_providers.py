@@ -27,7 +27,8 @@ from meals.core.use_cases.get_meal_plans import GetMealPlans
 from meals.core.use_cases.get_meal_photo import GetMealPhoto
 from meals.core.use_cases.set_meal_plan_recurring import SetMealPlanRecurring
 from meals.core.use_cases.get_meal_plan_recurring import GetMealPlanRecurring
-
+from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
+from meals.core.use_cases.run_meal_plan_recurring_cron import RunMealPlanRecurringCron
 
 
 async def get_set_meal_plan_time_policies_uc(session: AsyncSession) -> SetMealPlanTimePolicies:
@@ -118,16 +119,34 @@ def get_meal_photo_uc() -> GetMealPhoto:
     return GetMealPhoto(image_processor=LocalImageProcessor())
 
 
+
+
+
+
+async def get_apply_recurring_cycle_uc(session: AsyncSession) -> ApplyRecurringCycle:
+    return ApplyRecurringCycle(
+        meal_plan_repository=MealPlanRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+    )
+
+
 async def get_set_meal_plan_recurring_uc(session: AsyncSession) -> SetMealPlanRecurring:
     return SetMealPlanRecurring(
         recurring_repository=MealPlanRecurringRepository(session),
-        meal_plan_repository=MealPlanRepository(session),
         meal_repository=MealRepository(session),
         permission_repository=PermissionRepository(session),
-        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        apply_recurring_cycle=await get_apply_recurring_cycle_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
 
+
+async def get_run_meal_plan_recurring_cron_uc(session: AsyncSession) -> RunMealPlanRecurringCron:
+    return RunMealPlanRecurringCron(
+        recurring_repository=MealPlanRecurringRepository(session),
+        meal_repository=MealRepository(session),
+        apply_recurring_cycle=await get_apply_recurring_cycle_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
 
 def get_meal_plan_recurring_uc(session: AsyncSession) -> GetMealPlanRecurring:
     return GetMealPlanRecurring(recurring_repository=MealPlanRecurringRepository(session))
