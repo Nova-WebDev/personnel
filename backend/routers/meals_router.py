@@ -6,8 +6,9 @@ from schemas.meals.time_policy_response import TimePolicyResponse
 from schemas.meals.set_active_status_request import SetActiveStatusRequest
 from schemas.meals.meal_response import MealResponse
 from schemas.meals.create_meal_plan_request import CreateMealPlanRequest
+from schemas.meals.update_meal_plan_request import UpdateMealPlanRequest
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -125,5 +126,32 @@ async def create_meal_plan(
 ):
     create_meal_plan_uc = await get_create_meal_plan_uc(session)
     await create_meal_plan_uc.execute(payload.plan_date, payload.meal_id, _user.permissions)
+
+    return {"success": True}
+
+
+
+
+@router.patch("/meal-plan/{meal_plan_id}")
+async def update_meal_plan(
+    meal_plan_id: str,
+    payload: UpdateMealPlanRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    update_meal_plan_uc = await get_update_meal_plan_uc(session)
+    await update_meal_plan_uc.execute(meal_plan_id, payload.meal_id, _user.permissions)
+
+    return {"success": True}
+
+
+@router.delete("/meal-plan/{meal_plan_id}")
+async def delete_meal_plan(
+    meal_plan_id: str,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    delete_meal_plan_uc = await get_delete_meal_plan_uc(session)
+    await delete_meal_plan_uc.execute(meal_plan_id, _user.permissions)
 
     return {"success": True}

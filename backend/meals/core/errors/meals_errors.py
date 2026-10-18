@@ -48,3 +48,8 @@ class TimePolicyNotFoundError(DomainError):
     def __init__(self, message: str = "No time policy is defined for this weekday"):
         super().__init__(message)
 
+class MealPlanNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Meal plan not found"):
+        super().__init__(message)
