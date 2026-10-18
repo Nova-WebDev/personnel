@@ -147,7 +147,10 @@ class MealPlanRepository(IMealPlanRepository):
                 MealModel.is_active,
             )
             .join(MealModel, MealModel.id == MealPlanModel.meal_id)
-            .where(MealPlanModel.plan_date.between(date_from, date_to))
+            .where(
+                MealPlanModel.plan_date.between(date_from, date_to),
+                MealModel.is_active.is_(True),
+            )
             .order_by(MealPlanModel.plan_date)
         )
         result = await self._session.execute(stmt)
