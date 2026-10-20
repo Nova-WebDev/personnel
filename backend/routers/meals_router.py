@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Form, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.security.cron_api_key_dependency import verify_cron_api_key
+from app.rate_limit.rate_limit_dependency import rate_limit
 
 from schemas.meals.set_time_policies_request import SetTimePoliciesRequest
 from schemas.meals.time_policy_response import TimePolicyResponse
@@ -14,8 +15,9 @@ from schemas.meals.meal_plan_response import MealPlanResponse
 from schemas.meals.meal_response import MealResponse
 from schemas.meals.set_recurring_request import SetRecurringRequest
 from schemas.meals.recurring_response import RecurringItemResponse
+from schemas.meals.reserve_meal_request import ReserveMealRequest
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc, get_reserve_meal_uc, get_cancel_reservation_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -235,5 +237,33 @@ async def run_meal_plan_recurring_cron(
 ):
     uc = await get_run_meal_plan_recurring_cron_uc(session)
     await uc.execute()
+
+    return {"success": True}
+
+
+
+
+@router.post("/voucher")
+async def reserve_meal(
+    payload: ReserveMealRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+    _rate_limit=Depends(rate_limit(scope="reserve_meal", max_requests=10, window_seconds=60)),
+):
+    reserve_meal_uc = await get_reserve_meal_uc(session)
+    await reserve_meal_uc.execute(_user.id, payload.meal_plan_id)
+
+    return {"success": True}
+
+
+@router.delete("/voucher/{meal_plan_id}")
+async def cancel_reservation(
+    meal_plan_id: str,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+    _rate_limit=Depends(rate_limit(scope="cancel_reservation", max_requests=10, window_seconds=60)),
+):
+    cancel_reservation_uc = await get_cancel_reservation_uc(session)
+    await cancel_reservation_uc.execute(_user.id, meal_plan_id)
 
     return {"success": True}

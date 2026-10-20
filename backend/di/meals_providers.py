@@ -11,6 +11,7 @@ from meals.infrastructure.data.repositories.meal_plan_time_policy_repository imp
 from meals.infrastructure.data.repositories.meal_repository import MealRepository
 from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
 from meals.infrastructure.data.repositories.meal_plan_recurring_repository import MealPlanRecurringRepository
+from meals.infrastructure.data.repositories.voucher_repository import VoucherRepository
 
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 
@@ -29,6 +30,8 @@ from meals.core.use_cases.set_meal_plan_recurring import SetMealPlanRecurring
 from meals.core.use_cases.get_meal_plan_recurring import GetMealPlanRecurring
 from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
 from meals.core.use_cases.run_meal_plan_recurring_cron import RunMealPlanRecurringCron
+from meals.core.use_cases.reserve_meal import ReserveMeal
+from meals.core.use_cases.cancel_reservation import CancelReservation
 
 
 async def get_set_meal_plan_time_policies_uc(session: AsyncSession) -> SetMealPlanTimePolicies:
@@ -150,3 +153,22 @@ async def get_run_meal_plan_recurring_cron_uc(session: AsyncSession) -> RunMealP
 
 def get_meal_plan_recurring_uc(session: AsyncSession) -> GetMealPlanRecurring:
     return GetMealPlanRecurring(recurring_repository=MealPlanRecurringRepository(session))
+
+
+async def get_reserve_meal_uc(session: AsyncSession) -> ReserveMeal:
+    return ReserveMeal(
+        voucher_repository=VoucherRepository(session),
+        permission_repository=PermissionRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+
+
+async def get_cancel_reservation_uc(session: AsyncSession) -> CancelReservation:
+    return CancelReservation(
+        voucher_repository=VoucherRepository(session),
+        permission_repository=PermissionRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )

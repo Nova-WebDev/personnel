@@ -142,3 +142,15 @@ class PermissionRepository(IPermissionRepository):
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_reservation_event_user_ids(self, unit_id: str | None) -> list[str]:
+        condition = PermissionModel.level.in_([PermissionLevel.ADMIN, PermissionLevel.KITCHEN])
+
+        if unit_id is not None:
+            condition = condition | (
+                (PermissionModel.level == PermissionLevel.GROUP_MANAGER)
+                & (PermissionModel.group_id == unit_id)
+            )
+
+        result = await self._session.execute(select(PermissionModel.user_id).where(condition).distinct())
+        return list(result.scalars().all())

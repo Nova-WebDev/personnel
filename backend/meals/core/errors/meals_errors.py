@@ -67,3 +67,31 @@ class InvalidRecurringCycleError(DomainError):
 
     def __init__(self, message: str = "Recurring cycle is invalid"):
         super().__init__(message)
+
+
+class UserBlockedError(DomainError):
+    status_code = 403
+
+    def __init__(self, message: str = "Blocked users cannot reserve meals"):
+        super().__init__(message)
+
+
+class VoucherAlreadyUsedError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "A used reservation cannot be changed"):
+        super().__init__(message)
+
+
+class ReservationDeadlinePassedError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "The reservation deadline for this date has passed"):
+        super().__init__(message)
+
+
+class VoucherNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "Reservation not found"):
+        super().__init__(message)
