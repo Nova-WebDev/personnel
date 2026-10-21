@@ -5,30 +5,29 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from meals.core.entities.reservation_context import ReservationContext
-from meals.core.entities.voucher_summary import VoucherSummary
 from meals.core.entities.cancellation_context import CancellationContext
-from meals.core.entities.meal import Meal
 from meals.core.entities.day_reservation_report import (
+    BranchInfo,
+    BranchUnits,
     DayMealPlan,
     DayReservationReport,
+    DayReservationReportByBranch,
     MemberInfo,
     UnitInfo,
     UnitMembers,
 )
-
+from meals.core.entities.meal import Meal
+from meals.core.entities.reservation_context import ReservationContext
+from meals.core.entities.voucher_summary import VoucherSummary
 from meals.core.errors.meals_errors import MealPlanNotFoundError
-from user.core.errors.user_errors import UserNotFoundError
-
 from meals.core.interfaces.voucher_repository import IVoucherRepository
-
 from meals.infrastructure.data.models.meal import MealModel
 from meals.infrastructure.data.models.meal_plan import MealPlanModel
 from meals.infrastructure.data.models.voucher import VoucherModel
-from user.infrastructure.data.models.user import UserModel
+from user.core.errors.user_errors import UserNotFoundError
 from user.infrastructure.data.models.branch import BranchModel
 from user.infrastructure.data.models.unit import UnitModel
-
+from user.infrastructure.data.models.user import UserModel
 
 
 class VoucherRepository(IVoucherRepository):
@@ -106,8 +105,6 @@ class VoucherRepository(IVoucherRepository):
 
         return VoucherSummary(id=row[0], user_id=row[1], meal_plan_id=row[2], reservation_date=row[3])
 
-
-
     async def get_cancellation_context(self, user_id: str, meal_plan_id: str) -> CancellationContext:
         stmt = (
             select(MealPlanModel.plan_date, UserModel.unit_id)
@@ -153,7 +150,10 @@ class VoucherRepository(IVoucherRepository):
                     MealModel.is_active,
                 )
                 .join(MealModel, MealModel.id == MealPlanModel.meal_id)
-                .where(MealPlanModel.plan_date == plan_date)
+                .where(
+                    MealPlanModel.plan_date == plan_date,
+                    MealModel.is_active.is_(True),
+                )
                 .order_by(MealModel.title)
             )
         ).all()
@@ -200,6 +200,10 @@ class VoucherRepository(IVoucherRepository):
                 row[8],
                 UnitMembers(unit=UnitInfo(id=row[8], name=row[9], branch_id=row[10], branch_name=row[11])),
             )
+
+            meal = meals_by_plan.get(row[12])
+            is_reserved = meal is not None
+
             unit.members.append(
                 MemberInfo(
                     id=row[0],
@@ -210,10 +214,10 @@ class VoucherRepository(IVoucherRepository):
                     rfid_card_id=row[5],
                     photo_path=row[6],
                     is_blocked=row[7],
-                    is_reserved=row[12] is not None,
-                    meal_plan_id=row[12],
-                    meal=meals_by_plan.get(row[12]),
-                    is_used=row[13],
+                    is_reserved=is_reserved,
+                    meal_plan_id=row[12] if is_reserved else None,
+                    meal=meal,
+                    is_used=row[13] if is_reserved else None,
                 )
             )
 
