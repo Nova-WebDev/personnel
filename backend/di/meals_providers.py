@@ -32,6 +32,9 @@ from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
 from meals.core.use_cases.run_meal_plan_recurring_cron import RunMealPlanRecurringCron
 from meals.core.use_cases.reserve_meal import ReserveMeal
 from meals.core.use_cases.cancel_reservation import CancelReservation
+from meals.core.use_cases.get_day_reservation_report import GetDayReservationReport
+from meals.core.use_cases.get_day_reservation_report_by_branch import GetDayReservationReportByBranch
+
 
 
 async def get_set_meal_plan_time_policies_uc(session: AsyncSession) -> SetMealPlanTimePolicies:
@@ -172,3 +175,12 @@ async def get_cancel_reservation_uc(session: AsyncSession) -> CancelReservation:
         get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
+
+
+def get_day_reservation_report_uc(session: AsyncSession) -> GetDayReservationReport:
+    return GetDayReservationReport(voucher_repository=VoucherRepository(session))
+
+
+
+def get_day_reservation_report_by_branch_uc(session: AsyncSession) -> GetDayReservationReportByBranch:
+    return GetDayReservationReportByBranch(voucher_repository=VoucherRepository(session))

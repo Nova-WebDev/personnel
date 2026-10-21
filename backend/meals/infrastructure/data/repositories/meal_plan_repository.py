@@ -17,7 +17,7 @@ from meals.core.errors.meals_errors import (
 from meals.core.interfaces.meal_plan_repository import IMealPlanRepository
 from meals.infrastructure.data.models.meal import MealModel
 from meals.infrastructure.data.models.meal_plan import MealPlanModel
-
+from meals.infrastructure.data.models.voucher import VoucherModel
 
 class MealPlanRepository(IMealPlanRepository):
     def __init__(self, session: AsyncSession):
@@ -109,14 +109,38 @@ class MealPlanRepository(IMealPlanRepository):
         if result.scalar_one_or_none() is None:
             raise MealPlanNotFoundError()
 
-    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
-        stmt = self._select_with_meal().where(
-            MealPlanModel.plan_date.between(date_from, date_to),
-            MealModel.is_active.is_(True),
+    async def get_by_date_range(self, date_from: date, date_to: date, user_id: str) -> list[MealPlanWithMeal]:
+        stmt = (
+            select(
+                MealPlanModel.id,
+                MealPlanModel.plan_date,
+                MealModel.id,
+                MealModel.title,
+                MealModel.description,
+                MealModel.photo_path,
+                MealModel.is_active,
+                VoucherModel.id.is_not(None),
+            )
+            .join(MealModel, MealModel.id == MealPlanModel.meal_id)
+            .outerjoin(
+                VoucherModel,
+                (VoucherModel.meal_plan_id == MealPlanModel.id) & (VoucherModel.user_id == user_id),
+            )
+            .where(
+                MealPlanModel.plan_date.between(date_from, date_to),
+                MealModel.is_active.is_(True),
+            )
+            .order_by(MealPlanModel.plan_date)
         )
         result = await self._session.execute(stmt)
 
-        return [self._to_entity(row[0], row[1], row[2:]) for row in result.all()]
+        plans = []
+        for row in result.all():
+            plan = self._to_entity(row[0], row[1], row[2:7])
+            plan.is_reserved = row[7]
+            plans.append(plan)
+
+        return plans
 
     async def get_by_dates(self, dates: list[date]) -> list[MealPlanWithMeal]:
         stmt = self._select_with_meal().where(MealPlanModel.plan_date.in_(dates))

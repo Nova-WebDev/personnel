@@ -4,6 +4,7 @@ from datetime import date
 from meals.core.entities.reservation_context import ReservationContext
 from meals.core.entities.voucher_summary import VoucherSummary
 from meals.core.entities.cancellation_context import CancellationContext
+from meals.core.entities.day_reservation_report import DayReservationReport, DayReservationReportByBranch
 
 
 class IVoucherRepository(ABC):
@@ -28,4 +29,13 @@ class IVoucherRepository(ABC):
 
     @abstractmethod
     async def is_used(self, user_id: str, meal_plan_id: str) -> bool | None:
+        pass
+
+    @abstractmethod
+    async def get_day_report(self, plan_date: date, unit_ids: list[str] | None) -> DayReservationReport:
+        pass
+
+
+    @abstractmethod
+    async def get_day_report_by_branch(self, plan_date: date) -> DayReservationReportByBranch:
         pass

@@ -9,3 +9,4 @@ class MealPlanResponse(BaseModel):
     id: str
     plan_date: date
     meal: MealResponse
+    is_reserved: bool

@@ -11,9 +11,9 @@ class GetMealPlans:
     def __init__(self, meal_plan_repository: IMealPlanRepository):
         self.meal_plan_repository = meal_plan_repository
 
-    async def execute(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
+    async def execute(self, date_from: date, date_to: date, user_id: str) -> list[MealPlanWithMeal]:
         self._validate_range(date_from, date_to)
-        return await self.meal_plan_repository.get_by_date_range(date_from, date_to)
+        return await self.meal_plan_repository.get_by_date_range(date_from, date_to, user_id)
 
     @staticmethod
     def _validate_range(date_from: date, date_to: date) -> None:

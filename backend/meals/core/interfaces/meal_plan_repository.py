@@ -22,7 +22,7 @@ class IMealPlanRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_date_range(self, date_from: date, date_to: date) -> list[MealPlanWithMeal]:
+    async def get_by_date_range(self, date_from: date, date_to: date, user_id: str) -> list[MealPlanWithMeal]:
         pass
 
     @abstractmethod

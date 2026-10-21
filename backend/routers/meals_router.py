@@ -16,8 +16,9 @@ from schemas.meals.meal_response import MealResponse
 from schemas.meals.set_recurring_request import SetRecurringRequest
 from schemas.meals.recurring_response import RecurringItemResponse
 from schemas.meals.reserve_meal_request import ReserveMealRequest
+from schemas.meals.day_reservation_report_response import DayReservationReportResponse, DayReservationReportByBranchResponse
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc, get_reserve_meal_uc, get_cancel_reservation_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc, get_reserve_meal_uc, get_cancel_reservation_uc, get_day_reservation_report_uc,  get_day_reservation_report_by_branch_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -174,13 +175,14 @@ async def get_meal_plans(
     _user=Depends(get_current_user),
 ):
     get_plans_uc = get_meal_plans_uc(session)
-    plans = await get_plans_uc.execute(date_from, date_to)
+    plans = await get_plans_uc.execute(date_from, date_to, _user.id)
 
     return [
         MealPlanResponse(
             id=p.id,
             plan_date=p.plan_date,
             meal=MealResponse(**vars(p.meal)),
+            is_reserved=p.is_reserved,
         )
         for p in plans
     ]
@@ -267,3 +269,22 @@ async def cancel_reservation(
     await cancel_reservation_uc.execute(_user.id, meal_plan_id)
 
     return {"success": True}
+
+@router.get("/voucher/day", response_model=DayReservationReportResponse)
+async def get_day_reservation_report(
+    plan_date: date,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = get_day_reservation_report_uc(session)
+    return await uc.execute(plan_date, _user.permissions)
+
+
+@router.get("/voucher/day/all", response_model=DayReservationReportByBranchResponse)
+async def get_day_reservation_report_by_branch(
+    plan_date: date,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = get_day_reservation_report_by_branch_uc(session)
+    return await uc.execute(plan_date, _user.permissions)
