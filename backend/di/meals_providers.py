@@ -34,6 +34,7 @@ from meals.core.use_cases.reserve_meal import ReserveMeal
 from meals.core.use_cases.cancel_reservation import CancelReservation
 from meals.core.use_cases.get_day_reservation_report import GetDayReservationReport
 from meals.core.use_cases.get_day_reservation_report_by_branch import GetDayReservationReportByBranch
+from meals.core.use_cases.bulk_reserve_meal import BulkReserveMeal
 
 
 
@@ -184,3 +185,13 @@ def get_day_reservation_report_uc(session: AsyncSession) -> GetDayReservationRep
 
 def get_day_reservation_report_by_branch_uc(session: AsyncSession) -> GetDayReservationReportByBranch:
     return GetDayReservationReportByBranch(voucher_repository=VoucherRepository(session))
+
+
+
+async def get_bulk_reserve_meal_uc(session: AsyncSession) -> BulkReserveMeal:
+    return BulkReserveMeal(
+        voucher_repository=VoucherRepository(session),
+        permission_repository=PermissionRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )

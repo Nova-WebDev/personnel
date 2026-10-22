@@ -95,3 +95,16 @@ class VoucherNotFoundError(DomainError):
 
     def __init__(self, message: str = "Reservation not found"):
         super().__init__(message)
+
+class InvalidBulkReservationError(DomainError):
+    status_code = 422
+
+    def __init__(self, message: str = "Invalid bulk reservation request"):
+        super().__init__(message)
+
+
+class UserOutOfScopeError(DomainError):
+    status_code = 403
+
+    def __init__(self, message: str = "One or more users are not in your units"):
+        super().__init__(message)

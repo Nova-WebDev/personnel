@@ -16,6 +16,11 @@ from meals.core.entities.day_reservation_report import (
     UnitInfo,
     UnitMembers,
 )
+from meals.core.entities.bulk_reservation_context import (
+    BulkReservationContext,
+    BulkUserInfo,
+    ExistingVoucher,
+)
 from meals.core.entities.meal import Meal
 from meals.core.entities.reservation_context import ReservationContext
 from meals.core.entities.voucher_summary import VoucherSummary
@@ -247,3 +252,84 @@ class VoucherRepository(IVoucherRepository):
             meal_plans=report.meal_plans,
             branches=sorted(branches.values(), key=lambda b: b.branch.name),
         )
+
+
+
+    async def get_bulk_context(self, meal_plan_id: str, user_ids: list[str]) -> BulkReservationContext:
+        plan_row = (
+            await self._session.execute(
+                select(MealPlanModel.plan_date, MealModel.is_active)
+                .join(MealModel, MealModel.id == MealPlanModel.meal_id)
+                .where(MealPlanModel.id == meal_plan_id)
+            )
+        ).one_or_none()
+
+        if plan_row is None:
+            raise MealPlanNotFoundError()
+
+        plan_date, meal_is_active = plan_row
+
+        user_rows = (
+            await self._session.execute(
+                select(UserModel.id, UserModel.unit_id, UserModel.is_blocked).where(UserModel.id.in_(user_ids))
+            )
+        ).all()
+
+        voucher_rows = (
+            await self._session.execute(
+                select(VoucherModel.user_id, VoucherModel.meal_plan_id, VoucherModel.is_used).where(
+                    VoucherModel.user_id.in_(user_ids),
+                    VoucherModel.reservation_date == plan_date,
+                )
+            )
+        ).all()
+
+        return BulkReservationContext(
+            plan_date=plan_date,
+            meal_is_active=meal_is_active,
+            users={row[0]: BulkUserInfo(unit_id=row[1], is_blocked=row[2]) for row in user_rows},
+            vouchers={row[0]: ExistingVoucher(meal_plan_id=row[1], is_used=row[2]) for row in voucher_rows},
+        )
+
+    async def bulk_reserve(self, meal_plan_id: str, plan_date: date, user_ids: list[str]) -> dict[str, str]:
+        if not user_ids:
+            return {}
+
+        insert_stmt = pg_insert(VoucherModel).values(
+            [
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "meal_plan_id": meal_plan_id,
+                    "reservation_date": plan_date,
+                    "is_used": False,
+                }
+                for user_id in user_ids
+            ]
+        )
+        stmt = insert_stmt.on_conflict_do_update(
+            constraint="uq_voucher_user_date",
+            set_={"meal_plan_id": insert_stmt.excluded.meal_plan_id},
+            where=VoucherModel.is_used.is_(False),
+        ).returning(VoucherModel.user_id, VoucherModel.id)
+
+        result = await self._session.execute(stmt)
+
+        return {row[0]: row[1] for row in result.all()}
+
+    async def bulk_cancel(self, meal_plan_id: str, user_ids: list[str]) -> set[str]:
+        if not user_ids:
+            return set()
+
+        stmt = (
+            delete(VoucherModel)
+            .where(
+                VoucherModel.meal_plan_id == meal_plan_id,
+                VoucherModel.user_id.in_(user_ids),
+                VoucherModel.is_used.is_(False),
+            )
+            .returning(VoucherModel.user_id)
+        )
+        result = await self._session.execute(stmt)
+
+        return set(result.scalars().all())

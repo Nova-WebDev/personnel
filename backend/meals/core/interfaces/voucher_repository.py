@@ -5,6 +5,7 @@ from meals.core.entities.reservation_context import ReservationContext
 from meals.core.entities.voucher_summary import VoucherSummary
 from meals.core.entities.cancellation_context import CancellationContext
 from meals.core.entities.day_reservation_report import DayReservationReport, DayReservationReportByBranch
+from meals.core.entities.bulk_reservation_context import BulkReservationContext
 
 
 class IVoucherRepository(ABC):
@@ -38,4 +39,16 @@ class IVoucherRepository(ABC):
 
     @abstractmethod
     async def get_day_report_by_branch(self, plan_date: date) -> DayReservationReportByBranch:
+        pass
+
+    @abstractmethod
+    async def get_bulk_context(self, meal_plan_id: str, user_ids: list[str]) -> BulkReservationContext:
+        pass
+
+    @abstractmethod
+    async def bulk_reserve(self, meal_plan_id: str, plan_date: date, user_ids: list[str]) -> dict[str, str]:
+        pass
+
+    @abstractmethod
+    async def bulk_cancel(self, meal_plan_id: str, user_ids: list[str]) -> set[str]:
         pass

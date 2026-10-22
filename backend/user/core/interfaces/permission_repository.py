@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from user.core.entities.user_profile import ScopeInfo
 from user.core.entities.permission_with_user import PermissionWithUser
+from user.core.entities.reservation_recipients import ReservationRecipients
+
 
 class IPermissionRepository(ABC):
     @abstractmethod
@@ -37,4 +39,9 @@ class IPermissionRepository(ABC):
 
     @abstractmethod
     async def get_reservation_event_user_ids(self, unit_id: str | None) -> list[str]:
+        pass
+
+
+    @abstractmethod
+    async def get_reservation_event_recipients(self, unit_ids: list[str]) -> ReservationRecipients:
         pass

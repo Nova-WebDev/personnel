@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from user.core.entities.permission_level import PermissionLevel
 from user.core.entities.permission_with_user import PermissionWithUser
 from user.core.entities.scope_info import ScopeInfo
+from user.core.entities.reservation_recipients import ReservationRecipients
+
 from user.core.interfaces.permission_repository import IPermissionRepository
+
 from user.infrastructure.data.models.branch import BranchModel
 from user.infrastructure.data.models.permission import PermissionModel
 from user.infrastructure.data.models.unit import UnitModel
@@ -154,3 +157,22 @@ class PermissionRepository(IPermissionRepository):
 
         result = await self._session.execute(select(PermissionModel.user_id).where(condition).distinct())
         return list(result.scalars().all())
+
+
+    async def get_reservation_event_recipients(self, unit_ids: list[str]) -> ReservationRecipients:
+        condition = PermissionModel.level.in_([PermissionLevel.ADMIN, PermissionLevel.KITCHEN]) | (
+                (PermissionModel.level == PermissionLevel.GROUP_MANAGER)
+                & (PermissionModel.group_id.in_(unit_ids))
+        )
+        result = await self._session.execute(
+            select(PermissionModel.user_id, PermissionModel.level, PermissionModel.group_id).where(condition)
+        )
+
+        recipients = ReservationRecipients()
+        for user_id, level, group_id in result.all():
+            if level == PermissionLevel.GROUP_MANAGER:
+                recipients.managers_by_unit.setdefault(group_id, set()).add(user_id)
+            else:
+                recipients.global_user_ids.add(user_id)
+
+        return recipients
