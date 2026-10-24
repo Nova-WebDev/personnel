@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import date, datetime
 
 from meals.core.entities.reservation_context import ReservationContext
 from meals.core.entities.voucher_summary import VoucherSummary
 from meals.core.entities.cancellation_context import CancellationContext
 from meals.core.entities.day_reservation_report import DayReservationReport, DayReservationReportByBranch
 from meals.core.entities.bulk_reservation_context import BulkReservationContext
+from meals.core.entities.redeem_context import RedeemContext
 
 
 class IVoucherRepository(ABC):
@@ -51,4 +52,14 @@ class IVoucherRepository(ABC):
 
     @abstractmethod
     async def bulk_cancel(self, meal_plan_id: str, user_ids: list[str]) -> set[str]:
+        pass
+
+
+
+    @abstractmethod
+    async def get_redeem_context(self, rfid_card_id: str, day: date) -> RedeemContext:
+        pass
+
+    @abstractmethod
+    async def mark_used(self, voucher_id: str) -> datetime | None:
         pass

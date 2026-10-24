@@ -108,3 +108,10 @@ class UserOutOfScopeError(DomainError):
 
     def __init__(self, message: str = "One or more users are not in your units"):
         super().__init__(message)
+
+
+class RfidCardNotFoundError(DomainError):
+    status_code = 404
+
+    def __init__(self, message: str = "No user is registered with this RFID card"):
+        super().__init__(message)

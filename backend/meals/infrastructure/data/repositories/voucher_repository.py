@@ -1,7 +1,7 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +24,9 @@ from meals.core.entities.bulk_reservation_context import (
 from meals.core.entities.meal import Meal
 from meals.core.entities.reservation_context import ReservationContext
 from meals.core.entities.voucher_summary import VoucherSummary
-from meals.core.errors.meals_errors import MealPlanNotFoundError
+from meals.core.entities.redeem_context import RedeemContext, RedeemUser, RedeemVoucher
+
+from meals.core.errors.meals_errors import MealPlanNotFoundError, RfidCardNotFoundError
 from meals.core.interfaces.voucher_repository import IVoucherRepository
 from meals.infrastructure.data.models.meal import MealModel
 from meals.infrastructure.data.models.meal_plan import MealPlanModel
@@ -33,6 +35,7 @@ from user.core.errors.user_errors import UserNotFoundError
 from user.infrastructure.data.models.branch import BranchModel
 from user.infrastructure.data.models.unit import UnitModel
 from user.infrastructure.data.models.user import UserModel
+
 
 
 class VoucherRepository(IVoucherRepository):
@@ -333,3 +336,83 @@ class VoucherRepository(IVoucherRepository):
         result = await self._session.execute(stmt)
 
         return set(result.scalars().all())
+
+
+    async def get_redeem_context(self, rfid_card_id: str, day: date) -> RedeemContext:
+        stmt = (
+            select(
+                UserModel.id,
+                UserModel.phone,
+                UserModel.first_name,
+                UserModel.last_name,
+                UserModel.personnel_code,
+                UserModel.rfid_card_id,
+                UserModel.photo_path,
+                UserModel.is_blocked,
+                UnitModel.id,
+                UnitModel.name,
+                BranchModel.id,
+                BranchModel.name,
+                VoucherModel.id,
+                VoucherModel.meal_plan_id,
+                VoucherModel.is_used,
+                VoucherModel.redeemed_at,
+                MealModel.id,
+                MealModel.title,
+                MealModel.description,
+                MealModel.photo_path,
+                MealModel.is_active,
+            )
+            .select_from(UserModel)
+            .outerjoin(UnitModel, UnitModel.id == UserModel.unit_id)
+            .outerjoin(BranchModel, BranchModel.id == UnitModel.branch_id)
+            .outerjoin(
+                VoucherModel,
+                (VoucherModel.user_id == UserModel.id) & (VoucherModel.reservation_date == day),
+            )
+            .outerjoin(MealPlanModel, MealPlanModel.id == VoucherModel.meal_plan_id)
+            .outerjoin(MealModel, MealModel.id == MealPlanModel.meal_id)
+            .where(UserModel.rfid_card_id == rfid_card_id)
+        )
+        row = (await self._session.execute(stmt)).one_or_none()
+
+        if row is None:
+            raise RfidCardNotFoundError()
+
+        user = RedeemUser(
+            id=row[0],
+            phone=row[1],
+            first_name=row[2],
+            last_name=row[3],
+            personnel_code=row[4],
+            rfid_card_id=row[5],
+            photo_path=row[6],
+            is_blocked=row[7],
+            unit_id=row[8],
+            unit_name=row[9],
+            branch_id=row[10],
+            branch_name=row[11],
+        )
+
+        if row[12] is None:
+            return RedeemContext(user=user, voucher=None)
+
+        voucher = RedeemVoucher(
+            id=row[12],
+            meal_plan_id=row[13],
+            plan_date=day,
+            meal=Meal(id=row[16], title=row[17], description=row[18], photo_path=row[19], is_active=row[20]),
+            is_used=row[14],
+            redeemed_at=row[15],
+        )
+
+        return RedeemContext(user=user, voucher=voucher)
+
+    async def mark_used(self, voucher_id: str) -> datetime | None:
+        stmt = (
+            update(VoucherModel)
+            .where(VoucherModel.id == voucher_id, VoucherModel.is_used.is_(False))
+            .values(is_used=True, redeemed_at=func.now())
+            .returning(VoucherModel.redeemed_at)
+        )
+        return (await self._session.execute(stmt)).scalar_one_or_none()
