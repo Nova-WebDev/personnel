@@ -62,3 +62,9 @@ class InvalidPermissionScopeError(DomainError):
 
     def __init__(self, message: str = "Scope requirement violated for one or more permission levels"):
         super().__init__(message)
+
+class RfidCardConflictError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "This RFID card is already assigned to another user"):
+        super().__init__(message)

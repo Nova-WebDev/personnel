@@ -12,8 +12,9 @@ from schemas.user.user_profile_response import UserProfileResponse, ScopeInfoRes
 from schemas.user.permission_level_response import PermissionLevelResponse
 from schemas.user.permission_with_user_response import PermissionWithUserResponse
 from schemas.user.set_user_permissions_request import SetUserPermissionsRequest
+from schemas.user.set_rfid_request import SetRfidRequest
 
-from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc, get_my_profile_uc, get_public_user_profile_uc, get_permission_levels_uc, get_all_permissions_uc, get_delete_user_permissions_uc, get_set_user_permissions_uc
+from di.user_providers import get_create_branch_uc, get_update_branch_uc, get_create_unit_uc, get_update_unit_uc, get_delete_branch_uc, get_delete_unit_uc, get_branches_with_units_uc, get_users_with_location_uc, get_create_user_uc, get_update_user_uc, get_set_user_blocked_status_uc, get_user_qr_code_uc, get_profile_photo_uc, get_my_profile_uc, get_public_user_profile_uc, get_permission_levels_uc, get_all_permissions_uc, get_delete_user_permissions_uc, get_set_user_permissions_uc, get_set_user_rfid_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 from app.security.rate_limit_dependency import rate_limit
@@ -320,5 +321,18 @@ async def set_user_permissions(
     new_permissions = [{"level": p.level, "scope": p.scope} for p in payload.permissions]
 
     await set_permissions_uc.execute(user_id, new_permissions, _user.permissions)
+
+    return {"success": True}
+
+
+@router.put("/user/{user_id}/rfid")
+async def set_user_rfid(
+    user_id: str,
+    payload: SetRfidRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = get_set_user_rfid_uc(session)
+    await uc.execute(user_id, payload.rfid_card_id, _user.permissions)
 
     return {"success": True}

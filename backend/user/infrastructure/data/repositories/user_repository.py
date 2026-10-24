@@ -1,11 +1,14 @@
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from user.core.errors.user_errors import (
     UnitNotFoundError,
     PhoneConflictError,
     PersonnelCodeConflictError,
     UserNotFoundError,
+    RfidCardConflictError,
 )
 from user.core.interfaces.user_repository import IUserRepository
 from user.infrastructure.data.models.user import UserModel
@@ -183,3 +186,13 @@ class UserRepository(IUserRepository):
         result = await self._session.execute(stmt)
         if result.scalar_one_or_none() is not None:
             raise PersonnelCodeConflictError()
+
+
+    async def set_rfid_card(self, user_id: str, rfid_card_id: str | None) -> None:
+        stmt = update(UserModel).where(UserModel.id == user_id).values(rfid_card_id=rfid_card_id)
+
+        try:
+            async with self._session.begin_nested():
+                await self._session.execute(stmt)
+        except IntegrityError:
+            raise RfidCardConflictError()

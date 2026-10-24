@@ -176,3 +176,13 @@ class PermissionRepository(IPermissionRepository):
                 recipients.global_user_ids.add(user_id)
 
         return recipients
+
+    async def get_hr_manager_user_ids(self, unit_id: str | None) -> list[str]:
+        if unit_id is None:
+            return []
+
+        stmt = select(PermissionModel.user_id).where(
+            PermissionModel.level == PermissionLevel.HR_MANAGER,
+            PermissionModel.group_id == unit_id,
+        )
+        return list((await self._session.execute(stmt)).scalars().all())

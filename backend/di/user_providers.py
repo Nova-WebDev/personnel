@@ -27,6 +27,7 @@ from user.core.use_cases.get_permission_levels import GetPermissionLevels
 from user.core.use_cases.get_all_permissions import GetAllPermissions
 from user.core.use_cases.delete_user_permissions import DeleteUserPermissions
 from user.core.use_cases.set_user_permissions import SetUserPermissions
+from user.core.use_cases.set_user_rfid import SetUserRfid
 
 from user.infrastructure.data.repositories.branch_repository import BranchRepository
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
@@ -169,4 +170,13 @@ async def get_set_user_permissions_uc(session: AsyncSession) -> SetUserPermissio
         permission_repository=PermissionRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
         auth_store=AuthStore(redis),
+    )
+
+
+
+def get_set_user_rfid_uc(session: AsyncSession) -> SetUserRfid:
+    return SetUserRfid(
+        user_repository=UserRepository(session),
+        permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
     )

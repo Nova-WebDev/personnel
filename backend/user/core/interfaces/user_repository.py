@@ -55,3 +55,7 @@ class IUserRepository(ABC):
     @abstractmethod
     async def set_blocked_status(self, user_id: str, is_blocked: bool) -> UserWithLocation:
         pass
+
+    @abstractmethod
+    async def set_rfid_card(self, user_id: str, rfid_card_id: str | None) -> None:
+        pass

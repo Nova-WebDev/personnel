@@ -45,3 +45,7 @@ class IPermissionRepository(ABC):
     @abstractmethod
     async def get_reservation_event_recipients(self, unit_ids: list[str]) -> ReservationRecipients:
         pass
+
+    @abstractmethod
+    async def get_hr_manager_user_ids(self, unit_id: str | None) -> list[str]:
+        pass
