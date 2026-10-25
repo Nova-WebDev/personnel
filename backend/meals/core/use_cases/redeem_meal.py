@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from app.interfaces.event_publisher import IEventPublisher
 from meals.core.entities.inviter_guest_row import InviterGuestRow

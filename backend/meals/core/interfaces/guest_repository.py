@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import date
-from meals.core.entities.day_reservation_report import DayReservationReport
+
 from meals.core.entities.inviter_guest_row import InviterGuestRow
 
 
@@ -13,12 +13,6 @@ class IGuestRepository(ABC):
     async def set_guest_count(
         self, meal_plan_id: str, unit_id: str, invited_by: str, plan_date: date, guest_count: int
     ) -> int:
-        pass
-
-    @abstractmethod
-    async def get_day_report(
-        self, plan_date: date, unit_ids: list[str] | None, requester_id: str | None = None
-    ) -> DayReservationReport:
         pass
 
     @abstractmethod

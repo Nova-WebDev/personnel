@@ -122,3 +122,9 @@ class InvalidGuestCountError(DomainError):
 
     def __init__(self, message: str = "Guest count must be between 0 and 50"):
         super().__init__(message)
+
+class GuestAlreadyUsedError(DomainError):
+    status_code = 409
+
+    def __init__(self, message: str = "Delivered guest meals cannot be changed"):
+        super().__init__(message)

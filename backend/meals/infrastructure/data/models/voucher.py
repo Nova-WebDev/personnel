@@ -2,6 +2,7 @@ import uuid
 from sqlalchemy import Column, String, Date, Boolean, DateTime, ForeignKey, UniqueConstraint, Index, func
 from app.data.base import Base
 
+
 class VoucherModel(Base):
     __tablename__ = "voucher"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -16,4 +17,5 @@ class VoucherModel(Base):
         UniqueConstraint("user_id", "reservation_date", name="uq_voucher_user_date"),
         Index("idx_voucher_user", "user_id"),
         Index("idx_voucher_mealplan", "meal_plan_id"),
+        Index("idx_voucher_date", "reservation_date"),
     )

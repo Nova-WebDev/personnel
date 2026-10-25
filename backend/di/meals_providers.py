@@ -1,44 +1,58 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.redis.redis_client import redis_client
 from app.events.redis_event_publisher import RedisEventPublisher
 from app.images.image_format_validator import ImageFormatValidator
 from app.images.local_image_processor import LocalImageProcessor
+from app.redis.redis_client import redis_client
+
+from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
+from meals.core.use_cases.bulk_reserve_meal import BulkReserveMeal
+from meals.core.use_cases.cancel_reservation import CancelReservation
+from meals.core.use_cases.create_meal import CreateMeal
+from meals.core.use_cases.create_meal_plan import CreateMealPlan
+from meals.core.use_cases.delete_meal_plan import DeleteMealPlan
+from meals.core.use_cases.get_active_meals_count import GetActiveMealsCount
+from meals.core.use_cases.get_active_users_count import GetActiveUsersCount
+from meals.core.use_cases.get_branches_count import GetBranchesCount
+from meals.core.use_cases.get_day_reservation_report import GetDayReservationReport
+from meals.core.use_cases.get_day_reservation_report_by_branch import GetDayReservationReportByBranch
+from meals.core.use_cases.get_meal_photo import GetMealPhoto
+from meals.core.use_cases.get_meal_plan_recurring import GetMealPlanRecurring
+from meals.core.use_cases.get_meal_plan_time_policies import GetMealPlanTimePolicies
+from meals.core.use_cases.get_meal_plans import GetMealPlans
+from meals.core.use_cases.get_meals import GetMeals
+from meals.core.use_cases.redeem_meal import RedeemMeal
+from meals.core.use_cases.reserve_meal import ReserveMeal
+from meals.core.use_cases.run_meal_plan_recurring_cron import RunMealPlanRecurringCron
+from meals.core.use_cases.set_guest_count import SetGuestCount
+from meals.core.use_cases.set_meal_active_status import SetMealActiveStatus
+from meals.core.use_cases.set_meal_plan_recurring import SetMealPlanRecurring
+from meals.core.use_cases.set_meal_plan_time_policies import SetMealPlanTimePolicies
+from meals.core.use_cases.update_meal import UpdateMeal
+from meals.core.use_cases.update_meal_plan import UpdateMealPlan
+from meals.core.use_cases.get_average_guests import GetAverageGuests
+from meals.core.use_cases.get_meal_trend import GetMealTrend
+from meals.core.use_cases.get_branch_usage import GetBranchUsage
 
 from meals.infrastructure.cache.redis_meal_cache import RedisMealCache
 from meals.infrastructure.cache.redis_time_policy_cache import RedisTimePolicyCache
+from meals.infrastructure.data.repositories.guest_repository import GuestRepository
+from meals.infrastructure.data.repositories.meal_plan_recurring_repository import MealPlanRecurringRepository
+from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
 from meals.infrastructure.data.repositories.meal_plan_time_policy_repository import MealPlanTimePolicyRepository
 from meals.infrastructure.data.repositories.meal_repository import MealRepository
-from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
-from meals.infrastructure.data.repositories.meal_plan_recurring_repository import MealPlanRecurringRepository
+from meals.infrastructure.data.repositories.report_repository import ReportRepository
 from meals.infrastructure.data.repositories.voucher_repository import VoucherRepository
-from meals.infrastructure.data.repositories.guest_repository import GuestRepository
 
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 
-from meals.core.use_cases.set_meal_plan_time_policies import SetMealPlanTimePolicies
-from meals.core.use_cases.get_meal_plan_time_policies import GetMealPlanTimePolicies
-from meals.core.use_cases.create_meal import CreateMeal
-from meals.core.use_cases.update_meal import UpdateMeal
-from meals.core.use_cases.set_meal_active_status import SetMealActiveStatus
-from meals.core.use_cases.get_meals import GetMeals
-from meals.core.use_cases.create_meal_plan import CreateMealPlan
-from meals.core.use_cases.update_meal_plan import UpdateMealPlan
-from meals.core.use_cases.delete_meal_plan import DeleteMealPlan
-from meals.core.use_cases.get_meal_plans import GetMealPlans
-from meals.core.use_cases.get_meal_photo import GetMealPhoto
-from meals.core.use_cases.set_meal_plan_recurring import SetMealPlanRecurring
-from meals.core.use_cases.get_meal_plan_recurring import GetMealPlanRecurring
-from meals.core.use_cases.apply_recurring_cycle import ApplyRecurringCycle
-from meals.core.use_cases.run_meal_plan_recurring_cron import RunMealPlanRecurringCron
-from meals.core.use_cases.reserve_meal import ReserveMeal
-from meals.core.use_cases.cancel_reservation import CancelReservation
-from meals.core.use_cases.get_day_reservation_report import GetDayReservationReport
-from meals.core.use_cases.get_day_reservation_report_by_branch import GetDayReservationReportByBranch
-from meals.core.use_cases.bulk_reserve_meal import BulkReserveMeal
-from meals.core.use_cases.redeem_meal import RedeemMeal
-from meals.core.use_cases.set_guest_count import SetGuestCount
 
+async def get_meal_plan_time_policies_uc(session: AsyncSession) -> GetMealPlanTimePolicies:
+    redis = await redis_client.get_client()
+    return GetMealPlanTimePolicies(
+        policy_repository=MealPlanTimePolicyRepository(session),
+        time_policy_cache=RedisTimePolicyCache(redis),
+    )
 
 
 async def get_set_meal_plan_time_policies_uc(session: AsyncSession) -> SetMealPlanTimePolicies:
@@ -46,14 +60,6 @@ async def get_set_meal_plan_time_policies_uc(session: AsyncSession) -> SetMealPl
     return SetMealPlanTimePolicies(
         policy_repository=MealPlanTimePolicyRepository(session),
         event_publisher=RedisEventPublisher(redis_client),
-        time_policy_cache=RedisTimePolicyCache(redis),
-    )
-
-
-async def get_meal_plan_time_policies_uc(session: AsyncSession) -> GetMealPlanTimePolicies:
-    redis = await redis_client.get_client()
-    return GetMealPlanTimePolicies(
-        policy_repository=MealPlanTimePolicyRepository(session),
         time_policy_cache=RedisTimePolicyCache(redis),
     )
 
@@ -80,6 +86,7 @@ async def get_update_meal_uc(session: AsyncSession) -> UpdateMeal:
         image_processor=LocalImageProcessor(),
     )
 
+
 async def get_set_meal_active_status_uc(session: AsyncSession) -> SetMealActiveStatus:
     redis = await redis_client.get_client()
     return SetMealActiveStatus(
@@ -97,6 +104,9 @@ async def get_meals_uc(session: AsyncSession) -> GetMeals:
     )
 
 
+def get_meal_photo_uc() -> GetMealPhoto:
+    return GetMealPhoto(image_processor=LocalImageProcessor())
+
 
 async def get_create_meal_plan_uc(session: AsyncSession) -> CreateMealPlan:
     return CreateMealPlan(
@@ -104,7 +114,6 @@ async def get_create_meal_plan_uc(session: AsyncSession) -> CreateMealPlan:
         get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
-
 
 
 async def get_update_meal_plan_uc(session: AsyncSession) -> UpdateMealPlan:
@@ -122,15 +131,9 @@ async def get_delete_meal_plan_uc(session: AsyncSession) -> DeleteMealPlan:
         event_publisher=RedisEventPublisher(redis_client),
     )
 
+
 def get_meal_plans_uc(session: AsyncSession) -> GetMealPlans:
     return GetMealPlans(meal_plan_repository=MealPlanRepository(session))
-
-def get_meal_photo_uc() -> GetMealPhoto:
-    return GetMealPhoto(image_processor=LocalImageProcessor())
-
-
-
-
 
 
 async def get_apply_recurring_cycle_uc(session: AsyncSession) -> ApplyRecurringCycle:
@@ -150,6 +153,10 @@ async def get_set_meal_plan_recurring_uc(session: AsyncSession) -> SetMealPlanRe
     )
 
 
+def get_meal_plan_recurring_uc(session: AsyncSession) -> GetMealPlanRecurring:
+    return GetMealPlanRecurring(recurring_repository=MealPlanRecurringRepository(session))
+
+
 async def get_run_meal_plan_recurring_cron_uc(session: AsyncSession) -> RunMealPlanRecurringCron:
     return RunMealPlanRecurringCron(
         recurring_repository=MealPlanRecurringRepository(session),
@@ -157,9 +164,6 @@ async def get_run_meal_plan_recurring_cron_uc(session: AsyncSession) -> RunMealP
         apply_recurring_cycle=await get_apply_recurring_cycle_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
-
-def get_meal_plan_recurring_uc(session: AsyncSession) -> GetMealPlanRecurring:
-    return GetMealPlanRecurring(recurring_repository=MealPlanRecurringRepository(session))
 
 
 async def get_reserve_meal_uc(session: AsyncSession) -> ReserveMeal:
@@ -171,7 +175,6 @@ async def get_reserve_meal_uc(session: AsyncSession) -> ReserveMeal:
     )
 
 
-
 async def get_cancel_reservation_uc(session: AsyncSession) -> CancelReservation:
     return CancelReservation(
         voucher_repository=VoucherRepository(session),
@@ -179,16 +182,6 @@ async def get_cancel_reservation_uc(session: AsyncSession) -> CancelReservation:
         get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
-
-
-def get_day_reservation_report_uc(session: AsyncSession) -> GetDayReservationReport:
-    return GetDayReservationReport(voucher_repository=VoucherRepository(session))
-
-
-
-def get_day_reservation_report_by_branch_uc(session: AsyncSession) -> GetDayReservationReportByBranch:
-    return GetDayReservationReportByBranch(voucher_repository=VoucherRepository(session))
-
 
 
 async def get_bulk_reserve_meal_uc(session: AsyncSession) -> BulkReserveMeal:
@@ -200,7 +193,6 @@ async def get_bulk_reserve_meal_uc(session: AsyncSession) -> BulkReserveMeal:
     )
 
 
-
 def get_redeem_meal_uc(session: AsyncSession) -> RedeemMeal:
     return RedeemMeal(
         voucher_repository=VoucherRepository(session),
@@ -210,6 +202,12 @@ def get_redeem_meal_uc(session: AsyncSession) -> RedeemMeal:
     )
 
 
+def get_day_reservation_report_uc(session: AsyncSession) -> GetDayReservationReport:
+    return GetDayReservationReport(voucher_repository=VoucherRepository(session))
+
+
+def get_day_reservation_report_by_branch_uc(session: AsyncSession) -> GetDayReservationReportByBranch:
+    return GetDayReservationReportByBranch(voucher_repository=VoucherRepository(session))
 
 
 async def get_set_guest_count_uc(session: AsyncSession) -> SetGuestCount:
@@ -219,3 +217,28 @@ async def get_set_guest_count_uc(session: AsyncSession) -> SetGuestCount:
         get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )
+
+
+def get_active_users_count_uc(session: AsyncSession) -> GetActiveUsersCount:
+    return GetActiveUsersCount(report_repository=ReportRepository(session))
+
+
+def get_active_meals_count_uc(session: AsyncSession) -> GetActiveMealsCount:
+    return GetActiveMealsCount(report_repository=ReportRepository(session))
+
+
+def get_branches_count_uc(session: AsyncSession) -> GetBranchesCount:
+    return GetBranchesCount(report_repository=ReportRepository(session))
+
+
+
+def get_average_guests_uc(session: AsyncSession) -> GetAverageGuests:
+    return GetAverageGuests(report_repository=ReportRepository(session))
+
+
+def get_meal_trend_uc(session: AsyncSession) -> GetMealTrend:
+    return GetMealTrend(report_repository=ReportRepository(session))
+
+
+def get_branch_usage_uc(session: AsyncSession) -> GetBranchUsage:
+    return GetBranchUsage(report_repository=ReportRepository(session))

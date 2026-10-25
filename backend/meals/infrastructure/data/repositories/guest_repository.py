@@ -6,7 +6,6 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from meals.core.entities.day_reservation_report import DayReservationReport
 from meals.core.entities.inviter_guest_row import InviterGuestRow
 from meals.core.entities.meal import Meal
 from meals.core.errors.meals_errors import MealPlanNotFoundError
@@ -73,11 +72,6 @@ class GuestRepository(IGuestRepository):
             )
         )
         return int(total.scalar_one())
-
-    async def get_day_report(
-        self, plan_date: date, unit_ids: list[str] | None, requester_id: str | None = None
-    ) -> DayReservationReport:
-        raise NotImplementedError
 
     async def get_inviter_guests(self, user_id: str, day: date) -> list[InviterGuestRow]:
         stmt = (
