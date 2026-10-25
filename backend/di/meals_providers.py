@@ -12,6 +12,7 @@ from meals.infrastructure.data.repositories.meal_repository import MealRepositor
 from meals.infrastructure.data.repositories.meal_plan_repository import MealPlanRepository
 from meals.infrastructure.data.repositories.meal_plan_recurring_repository import MealPlanRecurringRepository
 from meals.infrastructure.data.repositories.voucher_repository import VoucherRepository
+from meals.infrastructure.data.repositories.guest_repository import GuestRepository
 
 from user.infrastructure.data.repositories.permission_repository import PermissionRepository
 
@@ -36,6 +37,7 @@ from meals.core.use_cases.get_day_reservation_report import GetDayReservationRep
 from meals.core.use_cases.get_day_reservation_report_by_branch import GetDayReservationReportByBranch
 from meals.core.use_cases.bulk_reserve_meal import BulkReserveMeal
 from meals.core.use_cases.redeem_meal import RedeemMeal
+from meals.core.use_cases.set_guest_count import SetGuestCount
 
 
 
@@ -202,6 +204,18 @@ async def get_bulk_reserve_meal_uc(session: AsyncSession) -> BulkReserveMeal:
 def get_redeem_meal_uc(session: AsyncSession) -> RedeemMeal:
     return RedeemMeal(
         voucher_repository=VoucherRepository(session),
+        guest_repository=GuestRepository(session),
         permission_repository=PermissionRepository(session),
+        event_publisher=RedisEventPublisher(redis_client),
+    )
+
+
+
+
+async def get_set_guest_count_uc(session: AsyncSession) -> SetGuestCount:
+    return SetGuestCount(
+        guest_repository=GuestRepository(session),
+        permission_repository=PermissionRepository(session),
+        get_time_policies=await get_meal_plan_time_policies_uc(session),
         event_publisher=RedisEventPublisher(redis_client),
     )

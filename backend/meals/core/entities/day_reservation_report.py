@@ -29,9 +29,17 @@ class MemberInfo:
 
 
 @dataclass
+class GuestSummary:
+    meal_plan_id: str
+    total: int
+    mine: int | None
+
+
+@dataclass
 class UnitMembers:
     unit: UnitInfo
     members: list[MemberInfo] = field(default_factory=list)
+    guests: list[GuestSummary] = field(default_factory=list)
 
 
 @dataclass
@@ -45,6 +53,7 @@ class DayReservationReport:
     plan_date: date
     meal_plans: list[DayMealPlan]
     units: list[UnitMembers]
+
 
 @dataclass
 class BranchInfo:

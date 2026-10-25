@@ -34,9 +34,10 @@ class IVoucherRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_day_report(self, plan_date: date, unit_ids: list[str] | None) -> DayReservationReport:
+    async def get_day_report(
+            self, plan_date: date, unit_ids: list[str] | None, requester_id: str | None = None
+    ) -> DayReservationReport:
         pass
-
 
     @abstractmethod
     async def get_day_report_by_branch(self, plan_date: date) -> DayReservationReportByBranch:

@@ -115,3 +115,10 @@ class RfidCardNotFoundError(DomainError):
 
     def __init__(self, message: str = "No user is registered with this RFID card"):
         super().__init__(message)
+
+
+class InvalidGuestCountError(DomainError):
+    status_code = 422
+
+    def __init__(self, message: str = "Guest count must be between 0 and 50"):
+        super().__init__(message)

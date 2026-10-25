@@ -27,10 +27,16 @@ class MemberInfoResponse(BaseModel):
     is_used: bool | None
 
 
+class GuestSummaryResponse(BaseModel):
+    meal_plan_id: str
+    total: int
+    mine: int | None
+
 
 class UnitMembersResponse(BaseModel):
     unit: UnitInfoResponse
     members: list[MemberInfoResponse]
+    guests: list[GuestSummaryResponse] = []
 
 
 class DayMealPlanResponse(BaseModel):
@@ -42,6 +48,7 @@ class DayReservationReportResponse(BaseModel):
     plan_date: date
     meal_plans: list[DayMealPlanResponse]
     units: list[UnitMembersResponse]
+
 
 class BranchInfoResponse(BaseModel):
     id: str

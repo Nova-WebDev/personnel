@@ -10,9 +10,9 @@ class GetDayReservationReport:
     def __init__(self, voucher_repository: IVoucherRepository):
         self.voucher_repository = voucher_repository
 
-    async def execute(self, plan_date: date, permissions: list[dict]) -> DayReservationReport:
+    async def execute(self, plan_date: date, permissions: list[dict], user_id: str) -> DayReservationReport:
         unit_ids = self._resolve_units(permissions)
-        return await self.voucher_repository.get_day_report(plan_date, unit_ids)
+        return await self.voucher_repository.get_day_report(plan_date, unit_ids, user_id)
 
     @staticmethod
     def _resolve_units(permissions: list[dict]) -> list[str] | None:

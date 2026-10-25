@@ -19,8 +19,9 @@ from schemas.meals.reserve_meal_request import ReserveMealRequest
 from schemas.meals.bulk_reserve_request import BulkReserveRequest
 from schemas.meals.redeem_meal_request import RedeemMealRequest
 from schemas.meals.day_reservation_report_response import DayReservationReportResponse, DayReservationReportByBranchResponse
+from schemas.meals.set_guest_count_request import SetGuestCountRequest
 
-from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc, get_reserve_meal_uc, get_cancel_reservation_uc, get_day_reservation_report_uc,  get_day_reservation_report_by_branch_uc, get_bulk_reserve_meal_uc, get_redeem_meal_uc
+from di.meals_providers import get_set_meal_plan_time_policies_uc, get_meal_plan_time_policies_uc, get_create_meal_uc, get_update_meal_uc, get_set_meal_active_status_uc, get_meals_uc, get_create_meal_plan_uc, get_update_meal_plan_uc, get_delete_meal_plan_uc, get_meal_plans_uc, get_meal_photo_uc, get_set_meal_plan_recurring_uc, get_meal_plan_recurring_uc, get_run_meal_plan_recurring_cron_uc, get_reserve_meal_uc, get_cancel_reservation_uc, get_day_reservation_report_uc,  get_day_reservation_report_by_branch_uc, get_bulk_reserve_meal_uc, get_redeem_meal_uc, get_set_guest_count_uc
 from app.data.db import get_session
 from app.security.dependencies import get_current_user
 
@@ -279,7 +280,7 @@ async def get_day_reservation_report(
     _user=Depends(get_current_user),
 ):
     uc = get_day_reservation_report_uc(session)
-    return await uc.execute(plan_date, _user.permissions)
+    return await uc.execute(plan_date, _user.permissions, _user.id)
 
 
 @router.get("/voucher/day/all", response_model=DayReservationReportByBranchResponse)
@@ -311,3 +312,19 @@ async def redeem_meal(
 ):
     uc = get_redeem_meal_uc(session)
     return await uc.execute(payload.rfid_card_id, _user.permissions)
+
+
+
+
+@router.put("/guest")
+async def set_guest_count(
+    payload: SetGuestCountRequest,
+    session: AsyncSession = Depends(get_session),
+    _user=Depends(get_current_user),
+):
+    uc = await get_set_guest_count_uc(session)
+    guest_count = await uc.execute(
+        payload.meal_plan_id, payload.unit_id, payload.guest_count, _user.id, _user.permissions
+    )
+
+    return {"success": True, "guest_count": guest_count}
