@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str
     redis_url: str
+    event_channel: str = "events"
 
     sms_api_key: str
     sms_template: str

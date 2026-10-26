@@ -1,4 +1,5 @@
 x-cron-key: &cron_key "3f9a7c1e5b2d84a06e7f1c93d5b8a2e4170c6f9d3a85b1e2c4d7f08a9b36e5c1"
+x-event-channel: &event_channel "events"
 
 services:
   redis:
@@ -62,6 +63,7 @@ services:
       FRONTEND_DOMAIN: "https://personnel.hoomanholding.co/card"
       PERSONNEL_API_KEY: "649050f5d9f6b53e6f10c4ae2516e55f010c7dc878dc4ede4dd7b687d40393a0"
       CRON_API_KEY: *cron_key
+      EVENT_CHANNEL: *event_channel
     restart: unless-stopped
     volumes:
       - personnel_media:/app/media
@@ -85,11 +87,11 @@ services:
       CRON_API_KEY: *cron_key
     restart: unless-stopped
 
-  websocket-gateway:
+  sse-gateway:
     build:
-      context: ./websocket-gateway
+      context: ./sse-gateway
       dockerfile: Dockerfile
-    container_name: personnel_websocket_gateway
+    container_name: personnel_sse_gateway
     networks:
       - personnel_net
     depends_on:
@@ -97,14 +99,17 @@ services:
         condition: service_healthy
     environment:
       REDIS_URL: "redis://redis:6379/0"
+      EVENT_CHANNEL: *event_channel
     restart: unless-stopped
+    stop_grace_period: 20s
     volumes:
-      - ./websocket-gateway/key:/app/key:ro
+      - ./sse-gateway/key:/app/key:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
       retries: 5
+      start_period: 10s
 
   nginx:
     build:
@@ -120,7 +125,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-      websocket-gateway:
+      sse-gateway:
         condition: service_healthy
     restart: unless-stopped
 

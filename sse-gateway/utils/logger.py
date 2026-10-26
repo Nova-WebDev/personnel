@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 _LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 _LOG_DIR.mkdir(exist_ok=True)
 
-logger = logging.getLogger("websocket-gateway")
+logger = logging.getLogger("sse-gateway")
 logger.setLevel(logging.ERROR)
 
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")

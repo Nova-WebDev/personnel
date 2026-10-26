@@ -2,8 +2,7 @@ import json
 
 from app.redis.redis_client import RedisClient
 from app.interfaces.event_publisher import IEventPublisher
-
-CHANNEL = "ws:events"
+from app.settings import settings
 
 
 class RedisEventPublisher(IEventPublisher):
@@ -26,4 +25,4 @@ class RedisEventPublisher(IEventPublisher):
             "data": data,
         }
 
-        await self.redis_client.publish(CHANNEL, json.dumps(payload))
+        await self.redis_client.publish(settings.event_channel, json.dumps(payload))
