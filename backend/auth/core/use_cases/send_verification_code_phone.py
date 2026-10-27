@@ -1,3 +1,5 @@
+from app.utils.logger import logger
+
 from auth.core.errors.auth_errors import PhoneTemporarilyBlockedError
 from auth.core.interfaces.code_generator import ICodeGenerator
 from auth.core.interfaces.sms_sender import ISmsSender
@@ -42,8 +44,12 @@ class SendVerificationCodePhone:
             }
         )
 
-        await self.sms_sender.send(phone, code)
+        # await self.sms_sender.send(phone, code)
 
+
+        logger.error(f"[DEV SMS] phone={phone} code={code}")
+
+        print(phone, code)
         await self.block_store.force_block(phone, SEND_SUCCESS_BLOCK_SECONDS)
 
         return {

@@ -1,0 +1,42 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@fortawesome/react-fontawesome": "^3.5.0",
+    "@tanstack/react-query": "^5.105.0",
+    "axios": "^1.21.0",
+    "idb": "^8.0.4",
+    "js-cookie": "^3.0.8",
+    "jwt-decode": "^4.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.18.4",
+    "react-spinners": "^0.17.1",
+    "sweetalert2": "^11.26.25",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "oxlint": "^1.90.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  }
+}
