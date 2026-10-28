@@ -45,7 +45,7 @@ export default function PhonePage() {
   };
 
   return (
-    <AuthLayout title="ورود با موبایل">
+    <AuthLayout title="ورود با موبایل" icon={faPhone}>
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
           <label

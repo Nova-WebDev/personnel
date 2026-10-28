@@ -28,7 +28,7 @@ def _set_access_cookie(response: Response, access_token: str) -> None:
         value=access_token,
         max_age=ACCESS_TOKEN_MAX_AGE,
         httponly=True,
-        secure=True,
+        secure=False,
         samesite="lax",
         path="/",
     )

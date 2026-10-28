@@ -56,8 +56,8 @@ function connect(): void {
   };
 
   stream.onerror = () => {
-    if (source !== stream || stream.readyState !== EventSource.CLOSED) return;
-    source = null;
+    if (source !== stream) return;
+    closeSource();
     closedHandler?.();
   };
 }

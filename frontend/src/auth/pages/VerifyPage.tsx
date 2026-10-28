@@ -7,7 +7,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-
+import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { useSendCode } from "../hooks/useSendCode";
 import { useVerifyCode } from "../hooks/useVerifyCode";
 import { useTempPhoneStore } from "../store/useTempPhoneStore";
@@ -144,7 +144,7 @@ export default function VerifyPage() {
         : null;
 
   return (
-    <AuthLayout title="تأیید کد">
+    <AuthLayout icon={faLock}>
       <p className="mb-6 text-center text-sm text-slate-600 dark:text-slate-300">
         کد ۵ رقمی ارسال‌شده به{" "}
         <span
