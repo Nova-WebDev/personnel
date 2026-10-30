@@ -4,6 +4,7 @@ import {
   faClock,
   faCreditCard,
   faGauge,
+  faHouse,
   faRotate,
   faSitemap,
   faUser,
@@ -23,54 +24,22 @@ export interface MenuItem {
 }
 
 export interface MenuGroup {
+  id: string;
   label: string;
+  icon: IconDefinition;
   items: MenuItem[];
 }
 
+export const topItems: MenuItem[] = [
+  { to: "/", label: "خانه", icon: faHouse },
+  { to: "/profile", label: "پروفایل من", icon: faUser },
+];
+
 export const menuGroups: MenuGroup[] = [
   {
-    label: "عمومی",
-    items: [
-      { to: "/meals", label: "رزرو غذا", icon: faUtensils },
-      { to: "/profile", label: "پروفایل من", icon: faUser },
-    ],
-  },
-  {
-    label: "آشپزخانه",
-    items: [
-      {
-        to: "/redeem",
-        label: "تحویل غذا",
-        icon: faCreditCard,
-        levels: ["kitchen"],
-      },
-      {
-        to: "/reports/day",
-        label: "گزارش روز",
-        icon: faChartColumn,
-        levels: ["kitchen"],
-      },
-      {
-        to: "/manage/meals",
-        label: "غذاها",
-        icon: faBurger,
-        levels: ["kitchen"],
-      },
-    ],
-  },
-  {
-    label: "منابع انسانی",
-    items: [
-      {
-        to: "/personnel",
-        label: "پرسنل",
-        icon: faUsers,
-        levels: ["hr_manager"],
-      },
-    ],
-  },
-  {
-    label: "مدیریت",
+    id: "reports",
+    label: "گزارش‌ها",
+    icon: faChartColumn,
     items: [
       {
         to: "/admin/dashboard",
@@ -79,16 +48,30 @@ export const menuGroups: MenuGroup[] = [
         levels: ["admin"],
       },
       {
-        to: "/admin/organization",
-        label: "ساختار سازمان",
-        icon: faSitemap,
-        levels: ["admin"],
+        to: "/reports/day",
+        label: "گزارش روز",
+        icon: faChartColumn,
+        levels: ["kitchen"],
+      },
+    ],
+  },
+  {
+    id: "food",
+    label: "غذا",
+    icon: faUtensils,
+    items: [
+      { to: "/meals", label: "رزرو غذا", icon: faUtensils },
+      {
+        to: "/redeem",
+        label: "تحویل غذا",
+        icon: faCreditCard,
+        levels: ["kitchen"],
       },
       {
-        to: "/admin/access",
-        label: "کاربران و دسترسی",
-        icon: faUserShield,
-        levels: ["admin"],
+        to: "/manage/meals",
+        label: "غذاها",
+        icon: faBurger,
+        levels: ["kitchen"],
       },
       {
         to: "/admin/time-policy",
@@ -100,6 +83,31 @@ export const menuGroups: MenuGroup[] = [
         to: "/admin/meal-cycle",
         label: "چرخه غذا",
         icon: faRotate,
+        levels: ["admin"],
+      },
+    ],
+  },
+  {
+    id: "hr",
+    label: "منابع انسانی",
+    icon: faUsers,
+    items: [
+      {
+        to: "/personnel",
+        label: "پرسنل",
+        icon: faUsers,
+        levels: ["hr_manager"],
+      },
+      {
+        to: "/admin/organization",
+        label: "ساختار سازمان",
+        icon: faSitemap,
+        levels: ["admin"],
+      },
+      {
+        to: "/admin/access",
+        label: "کاربران و دسترسی",
+        icon: faUserShield,
         levels: ["admin"],
       },
     ],

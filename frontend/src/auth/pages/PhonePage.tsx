@@ -50,7 +50,7 @@ export default function PhonePage() {
         <div>
           <label
             htmlFor="phone"
-            className="mb-1 block text-sm text-slate-600 dark:text-slate-300"
+            className="mb-1 block text-sm text-end text-slate-600 dark:text-slate-300"
           >
             شماره موبایل
           </label>

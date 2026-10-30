@@ -1,6 +1,5 @@
-import { useState } from "react";
-
 import fallback from "../assets/photo/profile.png";
+import { useCachedImage } from "../images/useCachedImage";
 
 interface AvatarProps {
   id: string;
@@ -9,15 +8,16 @@ interface AvatarProps {
 }
 
 export default function Avatar({ id, photoPath, className = "" }: AvatarProps) {
-  const [failed, setFailed] = useState(false);
-  const src =
-    photoPath !== null && !failed ? `/api/user/photo/${id}` : fallback;
+  const hasPhoto = photoPath !== null;
+  const src = useCachedImage(
+    hasPhoto ? `profile:${id}` : null,
+    hasPhoto ? `/api/user/photo/${id}` : null,
+  );
 
   return (
     <img
-      src={src}
+      src={src ?? fallback}
       alt=""
-      onError={() => setFailed(true)}
       className={`rounded-full object-cover ring-2 ring-teal-500/30 ${className}`}
     />
   );

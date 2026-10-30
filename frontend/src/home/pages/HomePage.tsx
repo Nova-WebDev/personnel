@@ -1,33 +1,91 @@
-import { faArrowLeft, faUtensils } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
 
-import { useMeStore } from "../../user/store/useMeStore";
+import Loader from "../../base/loading/Loader";
+import { useReserve } from "../../meals/hooks/useReserve";
+import { useTimePolicies } from "../../meals/hooks/useTimePolicies";
+import { useWeekPlans } from "../../meals/hooks/useWeekPlans";
+import {
+  addDays,
+  deadlineMs,
+  todayUtc,
+  weekdayOf,
+} from "../../meals/utils/dates";
+import DayPicker from "../components/DayPicker";
+import DeadlineBanner from "../components/DeadlineBanner";
+import MealCard from "../components/MealCard";
+import { useNow } from "../hooks/useNow";
+
+const DAYS_AHEAD = 7;
 
 export default function HomePage() {
-  const me = useMeStore((state) => state.me);
+  const today = todayUtc();
+  const now = useNow(10_000);
+
+  const days = useMemo(
+    () =>
+      Array.from({ length: DAYS_AHEAD }, (_, index) => addDays(today, index)),
+    [today],
+  );
+  const [selected, setSelected] = useState(days[1] ?? days[0]);
+
+  const { plans, isLoading, isError } = useWeekPlans(
+    days[0],
+    days[DAYS_AHEAD - 1],
+  );
+  const policies = useTimePolicies();
+  const reserve = useReserve();
+
+  const reservedDays = useMemo(
+    () =>
+      new Set(
+        plans.filter((plan) => plan.is_reserved).map((plan) => plan.plan_date),
+      ),
+    [plans],
+  );
+  const dayPlans = plans.filter((plan) => plan.plan_date === selected);
+
+  const cutoff =
+    policies.find((policy) => policy.target_weekday === weekdayOf(selected))
+      ?.cutoff_hours_before ?? 0;
+  const deadline = deadlineMs(selected, cutoff);
+  const locked = deadline - now <= 0;
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-white/5">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          سلام {me?.first_name}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          برای هر روز غذای خود را انتخاب کنید.
-        </p>
-      </div>
+      <DayPicker
+        days={days}
+        selected={selected}
+        reservedDays={reservedDays}
+        today={today}
+        onSelect={setSelected}
+      />
 
-      <Link
-        to="/meals"
-        className="flex items-center justify-between rounded-2xl border border-teal-500/20 bg-teal-500/10 p-5 text-teal-700 transition hover:bg-teal-500/15 dark:text-teal-300"
-      >
-        <span className="flex items-center gap-3 font-medium">
-          <FontAwesomeIcon icon={faUtensils} />
-          رزرو غذا
-        </span>
-        <FontAwesomeIcon icon={faArrowLeft} />
-      </Link>
+      {!locked && <DeadlineBanner deadline={deadline} />}
+
+      {isLoading && <Loader fullscreen={false} size={12} />}
+      {isError && (
+        <p className="text-red-600 dark:text-red-400">
+          دریافت برنامه ناموفق بود.
+        </p>
+      )}
+
+      {!isLoading && !isError && dayPlans.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-white/15 dark:text-slate-400">
+          برای این روز غذایی تعریف نشده است.
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {dayPlans.map((plan) => (
+          <MealCard
+            key={plan.id}
+            plan={plan}
+            locked={locked}
+            pending={reserve.isPending}
+            onToggle={() => reserve.mutate(plan.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
