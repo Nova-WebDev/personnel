@@ -21,15 +21,15 @@ export default function TablePagination({
   const goLast = () => onPageChange(totalPages);
 
   const base =
-    "inline-flex items-center justify-center rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1";
+    "inline-flex items-center justify-center rounded-lg border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500/30";
   const enabled =
-    "bg-indigo-100 dark:bg-[#152036] hover:bg-indigo-200 dark:hover:bg-[#1a2742]";
+    "cursor-pointer bg-white dark:bg-[#0c242f] border-slate-300 dark:border-white/10 hover:bg-teal-50 dark:hover:bg-[#12384a] hover:border-teal-400";
   const disabled =
-    "bg-indigo-100/60 dark:bg-[#152036]/60 cursor-not-allowed opacity-20";
-  const txt = "text-gray-800 dark:text-gray-200";
+    "bg-white dark:bg-[#0c242f] border-slate-200 dark:border-white/10 cursor-not-allowed opacity-40";
+  const txt = "text-slate-700 dark:text-slate-200";
 
   return (
-    <nav className="flex items-center gap-2" aria-label="pagination">
+    <nav dir="rtl" className="flex items-center gap-2" aria-label="pagination">
       <div className="items-center hidden gap-2 sm:flex">
         <button
           onClick={goFirst}
@@ -37,7 +37,7 @@ export default function TablePagination({
           aria-label="first"
           className={`${base} text-sm px-3 py-2 ${page === 1 ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faAngleDoubleLeft} />
+          <FontAwesomeIcon icon={faAngleDoubleRight} />
         </button>
 
         <button
@@ -46,13 +46,17 @@ export default function TablePagination({
           aria-label="prev"
           className={`${base} px-3 text-sm py-2 ${page === 1 ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faChevronLeft} />
+          <FontAwesomeIcon icon={faChevronRight} />
         </button>
 
-        <div className="px-3 py-2 rounded-lg bg-indigo-50 dark:bg-[#0b1a2b] text-sm flex items-center gap-2">
-          <span className="font-medium text-gray-800 dark:text-gray-200">{page}</span>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-500 dark:text-gray-300">{totalPages}</span>
+        <div className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-teal-50 dark:bg-teal-400/10">
+          <span className="font-semibold text-teal-700 dark:text-teal-300">
+            {page}
+          </span>
+          <span className="text-slate-400">/</span>
+          <span className="text-slate-600 dark:text-slate-300">
+            {totalPages}
+          </span>
         </div>
 
         <button
@@ -61,7 +65,7 @@ export default function TablePagination({
           aria-label="next"
           className={`${base} px-3 text-sm py-2 ${page === totalPages ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faChevronRight} />
+          <FontAwesomeIcon icon={faChevronLeft} />
         </button>
 
         <button
@@ -70,7 +74,7 @@ export default function TablePagination({
           aria-label="last"
           className={`${base} px-3 text-sm py-2 ${page === totalPages ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faAngleDoubleRight} />
+          <FontAwesomeIcon icon={faAngleDoubleLeft} />
         </button>
       </div>
 
@@ -81,13 +85,12 @@ export default function TablePagination({
           aria-label="prev"
           className={`${base} px-3 py-2 ${page === 1 ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faChevronLeft} />
+          <FontAwesomeIcon icon={faChevronRight} />
         </button>
 
-        <div className="px-3 py-2 rounded-lg bg-indigo-100 dark:bg-[#152036] text-sm text-center min-w-22">
-          <span className="text-gray-600 dark:text-gray-300">
-            {" "}
-            {page} / {totalPages}{" "}
+        <div className="px-3 py-2 text-sm text-center rounded-lg bg-teal-50 dark:bg-teal-400/10 min-w-22">
+          <span className="text-teal-700 dark:text-teal-300">
+            {page} / {totalPages}
           </span>
         </div>
 
@@ -97,7 +100,7 @@ export default function TablePagination({
           aria-label="next"
           className={`${base} px-3 py-2 ${page === totalPages ? disabled : enabled} ${txt}`}
         >
-          <FontAwesomeIcon icon={faChevronRight} />
+          <FontAwesomeIcon icon={faChevronLeft} />
         </button>
       </div>
     </nav>

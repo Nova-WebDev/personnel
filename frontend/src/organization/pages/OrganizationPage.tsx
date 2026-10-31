@@ -1,13 +1,11 @@
-import {
-  faBuilding,
-  faPlus,
-  faSitemap,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
+import Loader from "../../base/loading/Loader";
 import Modal from "../../base/Modal";
 import BranchForm from "../components/BranchForm";
+import BranchList from "../components/BranchList";
 import UnitForm from "../components/UnitForm";
 import { useBranches } from "../hooks/useBranches";
 
@@ -20,7 +18,7 @@ const secondaryButton =
 
 export default function OrganizationPage() {
   const [active, setActive] = useState<ActiveModal>(null);
-  const { branches } = useBranches();
+  const { branches, isLoading, isError } = useBranches();
 
   const close = () => setActive(null);
 
@@ -44,6 +42,14 @@ export default function OrganizationPage() {
           افزودن واحد
         </button>
       </div>
+
+      {isLoading && <Loader fullscreen={false} size={12} />}
+      {isError && (
+        <p className="text-red-600 dark:text-red-400">
+          دریافت اطلاعات سازمان ناموفق بود.
+        </p>
+      )}
+      {!isLoading && !isError && <BranchList branches={branches} />}
 
       <Modal open={active === "branch"} title="افزودن سازمان" onClose={close}>
         <BranchForm onDone={close} />

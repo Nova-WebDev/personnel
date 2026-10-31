@@ -18,54 +18,28 @@ export default function TableSearch({ value, onChange }: TableSearchProps) {
   };
 
   return (
-    <>
-      <div className="mb-4 md:hidden grow">
-        <div className="relative">
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="absolute text-slate-400 -translate-y-1/2 right-3 top-1/2 dark:text-slate-500"
-          />
-          <input
-            type="text"
-            defaultValue={value}
-            onChange={handleChange}
-            placeholder="جستجو..."
-            className="
-              w-full pr-10 pl-3 py-2 rounded-md text-sm
-              bg-white dark:bg-[#093752]
-              border border-slate-200 dark:border-slate-700/40
-              text-slate-800 dark:text-slate-200
-              placeholder-slate-400 dark:placeholder-slate-400
-              focus:outline-none focus:ring-2 focus:ring-cyan-400 dark:focus:ring-cyan-500
-              transition
-            "
-          />
-        </div>
+    <div className="mb-4 grow">
+      <div className="relative">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute -translate-y-1/2 pointer-events-none start-3 top-1/2 text-teal-600 dark:text-teal-300"
+        />
+        <input
+          type="text"
+          defaultValue={value}
+          onChange={handleChange}
+          placeholder="جستجو..."
+          className="
+            w-full ps-10 pe-3 py-2.5 rounded-lg text-sm
+            bg-white dark:bg-[#0c242f]
+            border border-slate-300 dark:border-white/10
+            text-slate-800 dark:text-slate-100
+            placeholder-slate-400 dark:placeholder-slate-500
+            focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20
+            transition
+          "
+        />
       </div>
-
-      <div className="hidden mb-4 md:block grow">
-        <div className="relative">
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="absolute text-slate-400 -translate-y-1/2 right-3 top-1/2 dark:text-slate-500"
-          />
-          <input
-            type="text"
-            defaultValue={value}
-            onChange={handleChange}
-            placeholder="search..."
-            className="
-              w-full pr-10 pl-3 py-2 rounded-md text-sm
-              bg-white dark:bg-[#093752]
-              border border-slate-200 dark:border-slate-700/40
-              text-slate-800 dark:text-slate-200
-              placeholder-slate-400 dark:placeholder-slate-400
-              focus:outline-none focus:ring-2 focus:ring-cyan-400 dark:focus:ring-cyan-500
-              transition
-            "
-          />
-        </div>
-      </div>
-    </>
+    </div>
   );
 }

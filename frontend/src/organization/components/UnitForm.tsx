@@ -60,11 +60,11 @@ export default function UnitForm({ branches, onDone }: UnitFormProps) {
       )}
 
       <div className="flex gap-3">
-        <button type="submit" disabled={!canSubmit} className={submitClass}>
-          {create.isPending ? "در حال ثبت..." : "ثبت"}
-        </button>
         <button type="button" onClick={onDone} className={cancelClass}>
           انصراف
+        </button>
+        <button type="submit" disabled={!canSubmit} className={submitClass}>
+          {create.isPending ? "در حال ثبت..." : "ثبت"}
         </button>
       </div>
     </form>

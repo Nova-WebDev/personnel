@@ -45,15 +45,15 @@ export default function BranchForm({ onDone }: BranchFormProps) {
       )}
 
       <div className="flex gap-3">
+        <button type="button" onClick={onDone} className={cancelClass}>
+          انصراف
+        </button>
         <button
           type="submit"
           disabled={trimmed === "" || create.isPending}
           className={submitClass}
         >
           {create.isPending ? "در حال ثبت..." : "ثبت"}
-        </button>
-        <button type="button" onClick={onDone} className={cancelClass}>
-          انصراف
         </button>
       </div>
     </form>

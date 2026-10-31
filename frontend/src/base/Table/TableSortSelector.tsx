@@ -27,24 +27,22 @@ export default function TableSortSelector<T>({
   const isActive = (col: TableColumn<T>) => orderBy === col.orderBy;
 
   return (
-    <div className="relative mr-2 md:ml-3 md:hidden">
+    <div className="relative ms-2 md:hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="px-3 py-2 bg-white dark:bg-[#093752] rounded-md flex items-center gap-2 text-sm text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700/40"
+        className="px-3 py-2.5 bg-white dark:bg-[#0c242f] rounded-lg flex items-center gap-2 text-sm text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-white/10"
       >
         <span>Sort</span>
-        <span className="inline-flex items-center justify-center w-5 h-5 ml-auto rounded-full">
-          <FontAwesomeIcon
-            icon={faChevronDown}
-            className={`text-[11px] transition-transform ${
-              open ? "rotate-180" : "rotate-0"
-            } text-slate-500 dark:text-slate-400`}
-          />
-        </span>
+        <FontAwesomeIcon
+          icon={faChevronDown}
+          className={`text-[11px] transition-transform text-teal-600 dark:text-teal-300 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+        />
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-2 w-52 bg-white dark:bg-[#062940] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute end-0 mt-2 w-52 bg-white dark:bg-[#0c242f] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
           {columns
             .filter((c) => c.orderBy)
             .map((col, i) => (
@@ -54,10 +52,10 @@ export default function TableSortSelector<T>({
                   if (col.orderBy) onSort(col.orderBy);
                   setOpen(false);
                 }}
-                className={`w-full px-3 py-2 text-left flex items-center justify-between text-sm ${
+                className={`w-full px-3 py-2.5 text-start flex items-center justify-between text-sm ${
                   isActive(col)
-                    ? "bg-cyan-50 dark:bg-[#093752] text-cyan-700 dark:text-cyan-300"
-                    : "text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-[#093752]"
+                    ? "bg-teal-50 dark:bg-teal-400/10 text-teal-700 dark:text-teal-300"
+                    : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
                 }`}
               >
                 <span>{col.label}</span>

@@ -1,5 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSort,
+  faSortUp,
+  faSortDown,
+} from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { TableColumn, TableHeaderProps } from "./types";
 
@@ -16,7 +20,8 @@ export default function TableHeader<T>({
     return faSortDown;
   };
 
-  const isActive = (col: TableColumn<T>) => Boolean(col.orderBy) && orderBy === col.orderBy;
+  const isActive = (col: TableColumn<T>) =>
+    Boolean(col.orderBy) && orderBy === col.orderBy;
 
   return (
     <thead>
@@ -26,22 +31,20 @@ export default function TableHeader<T>({
             key={i}
             onClick={() => col.orderBy && onSort(col.orderBy)}
             className={`
-              px-6 py-6 font-semibold text-left whitespace-nowrap transition select-none
-              ${col.orderBy ? "cursor-pointer" : ""}
-              ${isActive(col) ? "text-cyan-200" : "text-cyan-50"}
-              ${i === 0 ? "rounded-tl-xl rounded-bl-xl" : ""}
-              bg-cyan-700 dark:bg-[#093752]
+              px-6 py-5 font-semibold text-center whitespace-nowrap transition select-none
+              ${col.orderBy ? "cursor-pointer hover:bg-teal-700 dark:hover:bg-[#12384a]" : ""}
+              ${isActive(col) ? "text-white" : "text-teal-50"}
+              ${i === 0 ? "rounded-s-xl" : ""}
+              bg-teal-600 dark:bg-[#0f3140]
             `}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <span>{col.label}</span>
               {col.orderBy && (
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full">
                   <FontAwesomeIcon
                     icon={getIcon(col)}
-                    className={`text-[12px] ${
-                      isActive(col) ? "text-cyan-200" : "text-cyan-50"
-                    }`}
+                    className={`text-[12px] ${isActive(col) ? "text-white" : "text-teal-100/70"}`}
                   />
                 </span>
               )}
@@ -51,9 +54,9 @@ export default function TableHeader<T>({
 
         <th
           className="
-            px-6 py-5 font-semibold text-left text-cyan-50 whitespace-nowrap
-            bg-cyan-700 dark:bg-[#093752]
-            rounded-tr-xl rounded-br-xl
+            px-6 py-5 font-semibold text-center text-teal-50 whitespace-nowrap
+            bg-teal-600 dark:bg-[#0f3140]
+            rounded-e-xl
           "
         >
           Actions
