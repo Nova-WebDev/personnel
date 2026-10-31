@@ -24,7 +24,7 @@ class GetMealPlanTimePolicies:
                 MealPlanTimePolicy(
                     id=item["id"],
                     target_weekday=WeekDay(item["target_weekday"]),
-                    cutoff_hours_before=item["cutoff_hours_before"],
+                    cutoff_before=item["cutoff_before"],
                 )
                 for item in data
             ]
@@ -32,7 +32,7 @@ class GetMealPlanTimePolicies:
         policies = await self.policy_repository.get_all()
 
         payload = [
-            {"id": p.id, "target_weekday": p.target_weekday.value, "cutoff_hours_before": p.cutoff_hours_before}
+            {"id": p.id, "target_weekday": p.target_weekday.value, "cutoff_before": p.cutoff_before}
             for p in policies
         ]
         await self.time_policy_cache.set_all(json.dumps(payload))

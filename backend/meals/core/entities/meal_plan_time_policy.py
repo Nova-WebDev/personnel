@@ -7,4 +7,4 @@ from meals.core.entities.week_day import WeekDay
 class MealPlanTimePolicy:
     id: str
     target_weekday: WeekDay
-    cutoff_hours_before: int
+    cutoff_before: str

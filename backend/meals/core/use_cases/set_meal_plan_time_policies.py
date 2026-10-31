@@ -26,7 +26,7 @@ class SetMealPlanTimePolicies:
         result = await self.policy_repository.upsert_all(policies)
 
         payload = [
-            {"id": p.id, "target_weekday": p.target_weekday.value, "cutoff_hours_before": p.cutoff_hours_before}
+            {"id": p.id, "target_weekday": p.target_weekday.value, "cutoff_before": p.cutoff_before}
             for p in result
         ]
 

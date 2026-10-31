@@ -42,8 +42,8 @@ class DeleteMealPlan:
         weekday = weekday_of(plan_date)
         policy = next((p for p in policies if p.target_weekday == weekday), None)
 
-        cutoff_hours_before = policy.cutoff_hours_before if policy is not None else 0
-        deadline = resolve_deadline_utc(plan_date, cutoff_hours_before)
+        cutoff_before = policy.cutoff_before if policy is not None else 0
+        deadline = resolve_deadline_utc(plan_date, cutoff_before)
 
         if datetime.now(timezone.utc) >= deadline:
             raise MealPlanDeadlinePassedError()

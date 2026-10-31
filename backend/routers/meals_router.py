@@ -71,7 +71,7 @@ async def set_meal_plan_time_policies(
     _user=Depends(get_current_user),
 ):
     set_policies_uc = await get_set_meal_plan_time_policies_uc(session)
-    policies = [{"target_weekday": p.target_weekday, "cutoff_hours_before": p.cutoff_hours_before} for p in payload.policies]
+    policies = [{"target_weekday": p.target_weekday, "cutoff_before": p.cutoff_before} for p in payload.policies]
 
     await set_policies_uc.execute(policies, _user.permissions)
 
@@ -87,7 +87,7 @@ async def get_meal_plan_time_policies(
     policies = await get_policies_uc.execute()
 
     return [
-        TimePolicyResponse(id=p.id, target_weekday=p.target_weekday.value, cutoff_hours_before=p.cutoff_hours_before)
+        TimePolicyResponse(id=p.id, target_weekday=p.target_weekday.value, cutoff_before=p.cutoff_before)
         for p in policies
     ]
 

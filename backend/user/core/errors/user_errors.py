@@ -68,3 +68,13 @@ class RfidCardConflictError(DomainError):
 
     def __init__(self, message: str = "This RFID card is already assigned to another user"):
         super().__init__(message)
+
+
+class CannotBlockSelfError(DomainError):
+    status_code = 403
+    detail = "Cannot block yourself"
+
+
+class CannotBlockAdminError(DomainError):
+    status_code = 403
+    detail = "Cannot block an admin"

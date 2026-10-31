@@ -10,9 +10,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
+import { usePermissions } from "../../access/hooks/usePermissions";
 import Loader from "../../base/loading/Loader";
 import Modal from "../../base/Modal";
 import Table, { type TableAction } from "../../base/Table";
+import { useMeStore } from "../../user/store/useMeStore";
 import ActionButton from "../components/ActionButton";
 import PersonnelForm from "../components/PersonnelForm";
 import { personnelColumns } from "../components/personnelColumns";
@@ -43,8 +45,16 @@ const titles = {
 export default function PersonnelPage() {
   const [active, setActive] = useState<ActiveModal>(null);
   const { users, isLoading, isError } = usePersonnel();
+  const { permissions } = usePermissions();
   const table = usePersonnelTable(users);
   const setBlocked = useSetBlocked();
+  const myId = useMeStore((state) => state.me?.id ?? null);
+
+  const adminIds = new Set(
+    permissions
+      .filter((item) => item.level.toUpperCase() === "ADMIN")
+      .map((item) => item.user_id),
+  );
 
   const close = () => setActive(null);
 
@@ -84,17 +94,29 @@ export default function PersonnelPage() {
     },
     {
       label: () => "Block",
-      render: (user) => (
-        <ActionButton
-          tone={user.is_blocked ? "success" : "danger"}
-          icon={user.is_blocked ? faLockOpen : faBan}
-          onClick={() =>
-            setBlocked.mutate({ id: user.id, isBlocked: !user.is_blocked })
-          }
-        >
-          {user.is_blocked ? "Unblock" : "Block"}
-        </ActionButton>
-      ),
+      render: (user) => {
+        const isSelf = user.id === myId;
+        const isAdmin = adminIds.has(user.id);
+        const reason = isSelf
+          ? "نمی‌توانید خودتان را مسدود کنید"
+          : isAdmin
+            ? "ادمین قابل مسدود شدن نیست"
+            : undefined;
+
+        return (
+          <ActionButton
+            tone={user.is_blocked ? "success" : "danger"}
+            icon={user.is_blocked ? faLockOpen : faBan}
+            disabled={isSelf || isAdmin}
+            title={reason}
+            onClick={() =>
+              setBlocked.mutate({ id: user.id, isBlocked: !user.is_blocked })
+            }
+          >
+            {user.is_blocked ? "Unblock" : "Block"}
+          </ActionButton>
+        );
+      },
     },
   ];
 

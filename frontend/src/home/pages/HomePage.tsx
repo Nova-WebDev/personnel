@@ -45,8 +45,9 @@ export default function HomePage() {
   const dayPlans = plans.filter((plan) => plan.plan_date === selected);
 
   const cutoff =
-    policies.find((policy) => policy.target_weekday === weekdayOf(selected))
-      ?.cutoff_hours_before ?? 0;
+    policies.find(
+      (policy) => policy.target_weekday.toLowerCase() === weekdayOf(selected),
+    )?.cutoff_before ?? "0:00";
   const deadline = deadlineMs(selected, cutoff);
   const locked = deadline - now <= 0;
 

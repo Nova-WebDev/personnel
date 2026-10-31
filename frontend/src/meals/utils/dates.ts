@@ -28,8 +28,13 @@ export function weekdayOf(iso: string): string {
   return WEEKDAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()];
 }
 
-export function deadlineMs(planDate: string, cutoffHours: number): number {
-  return new Date(`${planDate}T00:00:00Z`).getTime() - cutoffHours * 3_600_000;
+export function parseCutoff(cutoff: string): number {
+  const [hours, minutes] = cutoff.split(":").map(Number);
+  return ((hours || 0) * 60 + (minutes || 0)) * 60_000;
+}
+
+export function deadlineMs(planDate: string, cutoff: string): number {
+  return new Date(`${planDate}T00:00:00Z`).getTime() - parseCutoff(cutoff);
 }
 
 const faDay = new Intl.DateTimeFormat("fa-IR", {

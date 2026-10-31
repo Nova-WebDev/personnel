@@ -19,14 +19,15 @@ class GetUserQrCode:
         self.image_processor = image_processor
         self.qr_code_generator = qr_code_generator
 
-    async def execute(self, user_id: str, permissions: list[dict]) -> bytes:
-        user = await self.user_repository.get_by_id(user_id)
-        self._authorize(user.unit_id, permissions)
+    async def execute(self, user_id: str, permissions: list[dict], requester_id: str) -> bytes:
+        if requester_id != user_id:
+            user = await self.user_repository.get_by_id(user_id)
+            self._authorize(user.unit_id, permissions)
 
         if await self.image_processor.exists(QR_FOLDER, user_id):
             return await self.image_processor.load(QR_FOLDER, user_id)
 
-        data = f"{settings.frontend_domain}/card/{user_id}"
+        data = f"{settings.frontend_domain}/{user_id}"
         qr_bytes = await self.qr_code_generator.generate(data)
 
         await self.image_processor.save_raw(QR_FOLDER, user_id, qr_bytes)

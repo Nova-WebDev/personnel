@@ -2,7 +2,11 @@ from user.core.interfaces.user_repository import IUserRepository
 from user.core.interfaces.permission_repository import IPermissionRepository
 from app.interfaces.event_publisher import IEventPublisher
 from auth.core.interfaces.auth_store import IAuthStore
-from user.core.errors.user_errors import PermissionDeniedError
+from user.core.errors.user_errors import (
+    PermissionDeniedError,
+    CannotBlockSelfError,
+    CannotBlockAdminError,
+)
 from user.core.entities.permission_level import PermissionLevel
 
 
@@ -19,9 +23,22 @@ class SetUserBlockedStatus:
         self.event_publisher = event_publisher
         self.auth_store = auth_store
 
-    async def execute(self, user_id: str, is_blocked: bool, permissions: list[dict]) -> None:
+    async def execute(
+        self,
+        user_id: str,
+        is_blocked: bool,
+        permissions: list[dict],
+        requester_id: str,
+    ) -> None:
+        if user_id == requester_id:
+            raise CannotBlockSelfError()
+
         current = await self.user_repository.get_by_id(user_id)
         self._authorize(current.unit_id, permissions)
+
+        admin_ids = await self.permission_repository.get_admin_user_ids()
+        if user_id in admin_ids:
+            raise CannotBlockAdminError()
 
         user = await self.user_repository.set_blocked_status(user_id, is_blocked)
 

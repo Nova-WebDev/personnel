@@ -7,6 +7,8 @@ type Tone = "neutral" | "danger" | "success";
 interface ActionButtonProps {
   tone?: Tone;
   icon?: IconDefinition;
+  disabled?: boolean;
+  title?: string;
   onClick: () => void;
   children: ReactNode;
 }
@@ -23,6 +25,8 @@ const toneClass: Record<Tone, string> = {
 export default function ActionButton({
   tone = "neutral",
   icon,
+  disabled = false,
+  title,
   onClick,
   children,
 }: ActionButtonProps) {
@@ -30,8 +34,14 @@ export default function ActionButton({
     <button
       type="button"
       dir="ltr"
+      disabled={disabled}
+      title={title}
       onClick={onClick}
-      className={`flex h-9 w-full min-w-24 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 text-center text-xs font-medium leading-none whitespace-nowrap transition md:w-auto ${toneClass[tone]}`}
+      className={`flex h-9 w-full min-w-24 items-center justify-center gap-2 rounded-lg border px-3 text-center text-xs font-medium leading-none whitespace-nowrap transition md:w-auto ${toneClass[tone]} ${
+        disabled
+          ? "cursor-not-allowed opacity-40 hover:bg-transparent dark:hover:bg-transparent"
+          : "cursor-pointer"
+      }`}
     >
       {icon !== undefined && <FontAwesomeIcon icon={icon} />}
       {children}

@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete as sql_delete
 from sqlalchemy import select
+
 from sqlalchemy.orm import joinedload
 
 from user.core.interfaces.branch_repository import IBranchRepository
@@ -35,14 +37,9 @@ class BranchRepository(IBranchRepository):
 
         return Branch(id=model.id, name=model.name)
 
+
     async def delete(self, branch_id: str) -> None:
-        model = await self._session.get(BranchModel, branch_id)
-
-        if model is None:
-            raise BranchNotFoundError()
-
-        await self._session.delete(model)
-        await self._session.flush()
+        await self._session.execute(sql_delete(BranchModel).where(BranchModel.id == branch_id))
 
     async def get_all_with_units(self) -> list[BranchWithUnits]:
         stmt = select(BranchModel).options(joinedload(BranchModel.units))

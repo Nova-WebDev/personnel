@@ -9,4 +9,9 @@ class BranchModel(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(100), nullable=False, unique=True)
 
-    units = relationship("UnitModel", back_populates="branch")
+    units = relationship(
+        "UnitModel",
+        back_populates="branch",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

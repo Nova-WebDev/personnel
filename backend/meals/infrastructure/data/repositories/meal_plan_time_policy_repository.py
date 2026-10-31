@@ -23,12 +23,12 @@ class MealPlanTimePolicyRepository(IMealPlanTimePolicyRepository):
 
             if weekday in existing:
                 model = existing[weekday]
-                model.cutoff_hours_before = p["cutoff_hours_before"]
+                model.cutoff_before = p["cutoff_before"]
             else:
                 model = MealPlanTimePolicyModel(
                     id=str(uuid.uuid4()),
                     target_weekday=weekday,
-                    cutoff_hours_before=p["cutoff_hours_before"],
+                    cutoff_before=p["cutoff_before"],
                 )
                 self._session.add(model)
 
@@ -40,7 +40,7 @@ class MealPlanTimePolicyRepository(IMealPlanTimePolicyRepository):
             MealPlanTimePolicy(
                 id=m.id,
                 target_weekday=m.target_weekday,
-                cutoff_hours_before=m.cutoff_hours_before,
+                cutoff_before=m.cutoff_before,
             )
             for m in models
         ]
@@ -54,7 +54,7 @@ class MealPlanTimePolicyRepository(IMealPlanTimePolicyRepository):
             MealPlanTimePolicy(
                 id=m.id,
                 target_weekday=m.target_weekday,
-                cutoff_hours_before=m.cutoff_hours_before,
+                cutoff_before=m.cutoff_before,
             )
             for m in models
         ]

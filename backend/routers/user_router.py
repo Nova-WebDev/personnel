@@ -201,10 +201,9 @@ async def set_user_blocked_status(
     _user=Depends(get_current_user),
 ):
     set_blocked_status_uc = await get_set_user_blocked_status_uc(session)
-    await set_blocked_status_uc.execute(user_id, payload.is_blocked, _user.permissions)
+    await set_blocked_status_uc.execute(user_id, payload.is_blocked, _user.permissions, _user.id)
 
     return {"success": True}
-
 
 
 @router.get("/user/{user_id}/qrcode")
@@ -214,9 +213,10 @@ async def get_user_qr_code(
     _user=Depends(get_current_user),
 ):
     get_qr_uc = get_user_qr_code_uc(session)
-    qr_bytes = await get_qr_uc.execute(user_id, _user.permissions)
+    qr_bytes = await get_qr_uc.execute(user_id, _user.permissions, _user.id)
 
     return Response(content=qr_bytes, media_type="image/png")
+
 
 @router.get("/me", response_model=UserProfileResponse)
 async def get_my_profile(

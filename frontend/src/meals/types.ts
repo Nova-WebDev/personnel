@@ -16,5 +16,11 @@ export interface MealPlan {
 export interface TimePolicy {
   id: string;
   target_weekday: string;
-  cutoff_hours_before: number;
+  cutoff_before: string;
+}
+
+export interface CreateMealInput {
+  title: string;
+  description: string;
+  photo: File | null;
 }
